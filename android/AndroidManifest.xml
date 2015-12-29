@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="23" />
 
@@ -21,14 +22,14 @@
         <activity
             android:name="de.lmu.ifi.bouncingbash.app.MainActivity"
             android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name="de.lmu.ifi.bouncingbash.app.LoginActivity"
-            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="de.lmu.ifi.bouncingbash.app.LoginActivity"
+            android:label="@string/app_name" >
         </activity>
         <activity
             android:name="de.lmu.ifi.bouncingbash.app.SignupActivity"
@@ -36,7 +37,7 @@
         </activity>
         <activity
             android:name="de.lmu.ifi.bouncingbash.app.android.AndroidLauncher"
-            android:label="@string/app_name" 
+            android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize">
         </activity>
