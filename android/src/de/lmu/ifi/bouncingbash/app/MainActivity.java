@@ -33,18 +33,14 @@ import de.lmu.ifi.bouncingbash.app.android.R;
 import de.lmu.ifi.bouncingbash.app.connectivity.*;
 
 
-public class MainActivity extends ActionBarActivity implements LocationListener {
+public class MainActivity extends ActionBarActivity {
 
     private final String TAG = "MainActivity";
-
-    public final long LOC_UPDATE_MIN_TIME = 10000;
-    public final long LOC_UPDATE_MIN_DIST = 5;
 
     private TextView textView;
     private EditText macEdit;
 
     private BluetoothAdapter bluetoothAdapter;
-    private LocationManager locationManager;
 
     private BluetoothService bluetoothService;
 
@@ -66,12 +62,6 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
             startActivityForResult(enableBtIntent, 1);
         }
 
-
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOC_UPDATE_MIN_TIME, LOC_UPDATE_MIN_DIST, this);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, LOC_UPDATE_MIN_TIME, LOC_UPDATE_MIN_DIST, this);
-        } catch(SecurityException e) { e.printStackTrace(); }
 
         // initialize custom services
         bluetoothService = BluetoothService.initBluetoothService(btHandler);
@@ -137,8 +127,13 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         restService.testAuthentication(testRestHandler);
     }
 
-    // LocationListener methods
-    @Override
+    public void onButtonMap(View view) {
+
+        Intent i = new Intent(this, MapActivity.class);
+        startActivity(i);
+    }
+
+    /*@Override
     public void onLocationChanged(Location location) {
 
         double lat = location.getLatitude();
@@ -146,22 +141,7 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         Log.d(TAG, "onLocationChanged   lat: "+lat+", lng: "+lng);
 
         restService.postLocation(lat, lng, testRestHandler);
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
+    }*/
 
     // handlers
     private final Handler testRestHandler = new Handler() {

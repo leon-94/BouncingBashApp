@@ -17,7 +17,9 @@ public class RestService {
     //public static final int MESSAGE_CONNECT = 2;
     //public static final int MESSAGE_GAME = 3;
 
-    private final String BASE_URL = "http://192.168.2.103:8080/BouncingBashServer/service/";
+    //private final String IP = "http://192.168.2.103:8080";
+    private final String IP = "http://192.168.2.110:8080";
+    private final String BASE_URL = IP + "/BouncingBashServer/service/";
     private String userId;
     private String password;
 
@@ -71,16 +73,6 @@ public class RestService {
         performHttpRequest(BASE_URL + "signup", "POST", message.toString(), handler);
     }
 
-    public void postLocation(double lat, double lng, Handler handler) {
-
-        JsonObject message = createAuthenticatedMessage();
-        message.add("lat", lat);
-        message.add("lng", lng);
-        message.add("mac", BluetoothService.BT_MAC_ADDRESS);
-
-        performHttpRequest(BASE_URL + "postlocation", "POST", message.toString(), handler);
-    }
-
     public void signUp (String id, String pw, Handler handler) {
 
         JsonObject message = new JsonObject();
@@ -100,5 +92,41 @@ public class RestService {
         message.add("credentials", credentials);
 
         return message;
+    }
+
+    public void postLocation(double lat, double lng, Handler handler) {
+
+        JsonObject message = createAuthenticatedMessage();
+        message.add("lat", lat);
+        message.add("lng", lng);
+        message.add("mac", BluetoothService.BT_MAC_ADDRESS);
+
+        performHttpRequest(BASE_URL + "postlocation", "POST", message.toString(), handler);
+    }
+
+    public void postSession(double lat, double lng, Handler handler) {
+
+        JsonObject message = createAuthenticatedMessage();
+        message.add("lat", lat);
+        message.add("lng", lng);
+        message.add("mac", BluetoothService.BT_MAC_ADDRESS);
+
+        performHttpRequest(BASE_URL + "postsession", "POST", message.toString(), handler);
+    }
+
+    public void getSessions(Handler handler) {
+
+        JsonObject message = createAuthenticatedMessage();
+
+        performHttpRequest(BASE_URL + "getsessions", "POST", message.toString(), handler);
+    }
+
+    public void joinSession(String hostId, Handler handler) {
+
+        JsonObject message = createAuthenticatedMessage();
+        message.add("hostId", hostId);
+        message.add("mac", BluetoothService.BT_MAC_ADDRESS);
+
+        performHttpRequest(BASE_URL + "joinsession", "POST", message.toString(), handler);
     }
 }
