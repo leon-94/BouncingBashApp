@@ -54,4 +54,10 @@
         android:text="Test Authentication"
         android:onClick="onButtonTestAuth" />
 
+    <Button android:id="@+id/button_map"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Map"
+        android:onClick="onButtonMap" />
+
 </LinearLayout>
