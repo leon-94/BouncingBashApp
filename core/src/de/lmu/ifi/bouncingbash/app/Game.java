@@ -44,6 +44,8 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	private World world;
 
+	private RollStates rollStates;
+
 
 	private static final float MAX_MOVEMENT_SPEED = 250;
 	@Override
@@ -165,8 +167,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 				, 0,
 				gameModel.getMap().getMainPlatform().getWidth(),
 				gameModel.getMap().getMainPlatform().getHeight());
-		//roll();
-
+		roll();
 		//System.out.println("X: "+ spriteBall.getX()+" Y: "+ spriteBall.getY());
 		//System.out.println("X1: "+ body1.getPosition().x+" Y1: "+ body1.getPosition().y);
 		batch.end();
@@ -177,7 +178,20 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	{
 		float adjustedY = Gdx.input.getAccelerometerY();
 		body1.setLinearVelocity(adjustedY * 40, 0);
-
+		if( (adjustedY<1||adjustedY>-1) && RollStates.STAND!=rollStates)
+		{
+			rollStates=RollStates.STAND;
+		}
+		if(adjustedY>1 && RollStates.RIGHT!=rollStates)
+		{
+			body1.setLinearVelocity(adjustedY * 40, 0);
+			rollStates=RollStates.RIGHT;
+		}
+		if(adjustedY<-1 && RollStates.LEFT!=rollStates)
+		{
+			body1.setLinearVelocity(adjustedY * 40, 0);
+			rollStates=RollStates.LEFT;
+		}
 	}
 
 
