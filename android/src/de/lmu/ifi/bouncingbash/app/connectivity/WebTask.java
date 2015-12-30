@@ -51,7 +51,11 @@ public class WebTask extends AsyncTask<String, String, String> {
 
         Log.v(TAG, "server response (raw): " + result);
 
-        if(result != null) handler.obtainMessage(RestService.MESSAGE_SERVER_RESPONSE, result).sendToTarget();
+        if(result == null || result == "") {
+            handler.obtainMessage(RestService.MESSAGE_ERROR);
+        }
+        handler.obtainMessage(RestService.MESSAGE_SERVER_RESPONSE, result).sendToTarget();
+
         Log.v(TAG, "WebTask done");
     }
 
