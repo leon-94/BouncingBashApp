@@ -24,10 +24,14 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 import de.lmu.ifi.bouncingbash.app.game.models.Ball;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.JumpStates;
+import de.lmu.ifi.bouncingbash.app.game.views.BackgroundView;
+import de.lmu.ifi.bouncingbash.app.game.views.BallView;
+import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
 
 /***Spiel das gezeichnet wird**/
 public class Game extends ApplicationAdapter implements InputProcessor {
@@ -48,6 +52,9 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	final float PIXELS_TO_METERS = 100f;
 	Box2DDebugRenderer debugRenderer;
+	private PlatformView platformView;
+	private BallView ballView;
+	private BackgroundView backgroundView;
 
 	private static final float MAX_MOVEMENT_SPEED = 250;
 	@Override
@@ -55,73 +62,34 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		gameModel = new GameModel();
 		b = gameModel.getPlayer().getBall();
 		b.setyCoordinates(gameModel.getMap().getMainPlatform().getHeight());
-		//kontrolliert touch input TODO Accelerometer Abfrage einfügen
-		//
 		world = new World(new Vector2(0, -100f),true);
 
 		batch = new SpriteBatch();
-		textureBall = gameModel.getPlayer().getBall().getTexture();
-        spriteBall = gameModel.getPlayer().getBall().getSprite();
-		spriteBall.setPosition(Gdx.graphics.getWidth() / 2 - spriteBall.getWidth() / 2,
-				Gdx.graphics.getHeight() / 2);
-        textureBackground = gameModel.getMap().getBackGround();
-        spriteBackground = new Sprite(textureBackground);
-		texturePlatform = gameModel.getMap().getMainPlatform().getTexture();
-		spritePlatform = new Sprite(texturePlatform);
-		System.out.println("Game: " + Gdx.input.isPeripheralAvailable(Input.Peripheral.Accelerometer));
+		ballView = new BallView(gameModel,world, batch);
+		backgroundView = new BackgroundView(gameModel, batch);
+		platformView = new PlatformView(gameModel,world, batch);
+
 		//TODO
 		//Controller c = new Controller(gameModel,body1);
 		Gdx.input.setInputProcessor(this);
-		//
-		PolygonShape shape1 = new PolygonShape();
-		shape1.setAsBox(
-				(spriteBall.getWidth() )/PIXELS_TO_METERS/2,
-				(spriteBall.getHeight())/PIXELS_TO_METERS/2);
-		PolygonShape shape2 = new PolygonShape();
-		shape2.setAsBox(
-				(spritePlatform.getWidth()/2)
-				, (spritePlatform.getHeight() /2) );
-
-		// Sprite1's Physics body
-		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		bodyDef.position.set(
-				(spriteBall.getX() +spriteBall.getWidth()/2)/PIXELS_TO_METERS,
-				spriteBall.getY()/PIXELS_TO_METERS );
-		body1= world.createBody(bodyDef);
-
-		// Sprite2's physics body
-		BodyDef bodyDef2 = new BodyDef();
-		bodyDef2.type = BodyDef.BodyType.StaticBody;
-		bodyDef2.position.set(spritePlatform.getX()+spritePlatform.getWidth()/2, spritePlatform.getY());
-		body2 = world.createBody(bodyDef2);
-
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = shape1;
-		fixtureDef.density = 1f;
-
-		Fixture fixture = body1.createFixture(fixtureDef);
-		Fixture fixture2 = body2.createFixture(fixtureDef);
-
-
 		BodyDef bodyDef3 = new BodyDef();
 		bodyDef3.type = BodyDef.BodyType.StaticBody;
 		float w = Gdx.graphics.getWidth();
 		float h = Gdx.graphics.getHeight();
 		bodyDef3.position.set(0,0);
 
-		FixtureDef fixtureDef2 = new FixtureDef();
+		FixtureDef fixtureDef3 = new FixtureDef();
 		EdgeShape edgeShape = new EdgeShape();
 		edgeShape.set(-w / 2, 0, w / 2, 0);
 		System.out.println("w: "+w+" h: "+h);
-		fixtureDef2.shape = edgeShape;
+		fixtureDef3.shape = edgeShape;
 
 		bodyEdgeScreen = world.createBody(bodyDef3);
-		bodyEdgeScreen.createFixture(fixtureDef2);
+		bodyEdgeScreen.createFixture(fixtureDef3);
 		edgeShape.dispose();
 		// Shape is the only disposable of the lot, so get rid of it
-		shape1.dispose();
-		shape2.dispose();
+
+
 
 		collision();
 		debugRenderer = new Box2DDebugRenderer();
@@ -156,31 +124,27 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	}
 
 	@Override
-	public void render () {
+	public void render() {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		world.step(1f / 30f, 6, 2);
 		// Now update the spritee position accordingly to it's now updated Physics body
 		spriteBall.setPosition(
-				(body1.getPosition().x*PIXELS_TO_METERS)- spriteBall.getWidth()/2,
-				(body1.getPosition().y * PIXELS_TO_METERS)-spriteBall.getHeight()/2 );
+				(body1.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
+				(body1.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
 
 		batch.disableBlending();
 		batch.begin();
 		Matrix4 debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS,
 				PIXELS_TO_METERS, 0);
-		batch.draw(spriteBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		backgroundView.drawBackground();
 		batch.enableBlending();
-		batch.draw(spriteBall, spriteBall.getX(), spriteBall.getY());
-
-		batch.draw(texturePlatform,
-				gameModel.getMap().getMainPlatform().getHeight()
-				, 0,
-				gameModel.getMap().getMainPlatform().getWidth(),
-				gameModel.getMap().getMainPlatform().getHeight());
+		ballView.drawBall();
+		platformView.drawMainPlatform();
+		;
 		roll();
 		//System.out.println("X: "+ spriteBall.getX()+" Y: "+ spriteBall.getY());
-		//System.out.println("X1: "+ body1.getPosition().x+" Y1: "+ body1.getPosition().y);
+		System.out.println("X1: "+ body1.getPosition().x+" Y1: "+ body1.getPosition().y);
 		batch.end();
 
 		debugRenderer.render(world, debugMatrix);
