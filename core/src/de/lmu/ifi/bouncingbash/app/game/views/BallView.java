@@ -11,6 +11,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import de.lmu.ifi.bouncingbash.app.Controller;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 
 /**
@@ -60,11 +61,25 @@ public class BallView {
 
         Fixture fixture = body1.createFixture(fixtureDef1);
         shape1.dispose();
+        /**setze die steuerung des Balls**/
+        Controller ballController = new Controller(gameModel,body1);
+        Gdx.input.setInputProcessor(ballController);
 
     }
 
     public void drawBall()
     {
+        spriteBall.setPosition(
+                (body1.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
+                (body1.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
         batch.draw(spriteBall, spriteBall.getX(), spriteBall.getY());
+    }
+
+    public void roll()
+    {
+        float adjustedY = Gdx.input.getAccelerometerY();
+        body1.setLinearVelocity(adjustedY, 0);
+
+
     }
 }

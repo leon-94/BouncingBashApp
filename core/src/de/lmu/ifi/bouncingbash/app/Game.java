@@ -34,16 +34,8 @@ import de.lmu.ifi.bouncingbash.app.game.views.BallView;
 import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
 
 /***Spiel das gezeichnet wird**/
-public class Game extends ApplicationAdapter implements InputProcessor {
+public class Game extends ApplicationAdapter  {
 	private SpriteBatch batch;
-	private Texture textureBall;
-	private Sprite spriteBall;
-	private SpriteBatch batchBackground;
-	private Texture textureBackground;
-	private Sprite spriteBackground;
-	private SpriteBatch batchPlatform;
-	private Texture texturePlatform;
-	private Sprite spritePlatform;
 	private GameModel gameModel;
 	private Ball b;
 	private Body body1,body2,bodyEdgeScreen;
@@ -55,8 +47,6 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	private PlatformView platformView;
 	private BallView ballView;
 	private BackgroundView backgroundView;
-
-	private static final float MAX_MOVEMENT_SPEED = 250;
 	@Override
 	public void create () {
 		gameModel = new GameModel();
@@ -69,9 +59,6 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		backgroundView = new BackgroundView(gameModel, batch);
 		platformView = new PlatformView(gameModel,world, batch);
 
-		//TODO
-		//Controller c = new Controller(gameModel,body1);
-		Gdx.input.setInputProcessor(this);
 		BodyDef bodyDef3 = new BodyDef();
 		bodyDef3.type = BodyDef.BodyType.StaticBody;
 		float w = Gdx.graphics.getWidth();
@@ -128,23 +115,19 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		world.step(1f / 30f, 6, 2);
-		// Now update the spritee position accordingly to it's now updated Physics body
-		spriteBall.setPosition(
-				(body1.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
-				(body1.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
+
 
 		batch.disableBlending();
 		batch.begin();
+
 		Matrix4 debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS,
 				PIXELS_TO_METERS, 0);
 		backgroundView.drawBackground();
 		batch.enableBlending();
 		ballView.drawBall();
 		platformView.drawMainPlatform();
-		;
-		roll();
-		//System.out.println("X: "+ spriteBall.getX()+" Y: "+ spriteBall.getY());
-		System.out.println("X1: "+ body1.getPosition().x+" Y1: "+ body1.getPosition().y);
+		ballView.roll();
+
 		batch.end();
 
 		debugRenderer.render(world, debugMatrix);
@@ -152,58 +135,4 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	}
 
-	public void roll()
-	{
-		float adjustedY = Gdx.input.getAccelerometerY();
-		body1.setLinearVelocity(adjustedY , 0);
-
-
-	}
-
-
-
-	@Override
-	public boolean keyDown(int keycode) {
-		return false;
-	}
-
-	@Override
-	public boolean keyUp(int keycode) {
-		return false;
-	}
-
-	@Override
-	public boolean keyTyped(char character) {
-		return false;
-	}
-	/**jump**/
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		Gdx.app.log("Controller", "pressed Jump");
-		body1.setLinearVelocity(body1.getLinearVelocity().x,100f);
-
-
-
-		return false;
-	}
-
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		return false;
-	}
-
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		return false;
-	}
-
-	@Override
-	public boolean scrolled(int amount) {
-		return false;
-	}
 }

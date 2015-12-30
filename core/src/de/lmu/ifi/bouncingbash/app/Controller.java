@@ -37,16 +37,9 @@ public class Controller implements InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Gdx.app.log("Controller", "pressed Jump");
-        /**Ball b = gameModel.getPlayer().getBall();
-        Gdx.app.log("Controller", "getJumpSpeed : "+b.getJumpSpeed()+" getOriginalJumpSpeed : "+b.getOriginalJumpSpeed()
-                +" getJumpState : "+b.getJumpState()+" getyCoordinates : "+b.getyCoordinates()
-                +" getyCoordinatesOriginal : "+b.getyCoordinatesOriginal());
-        if(b.getJumpState() != JumpStates.ASCENDING  || b.getJumpState() != JumpStates.DESCENDING   )
-        {
-            b.setJumpState(JumpStates.ASCENDING);
-            b.setyCoordinatesOriginal(b.getyCoordinates());
-        }**/
-        body.applyForceToCenter(0f,10f,true);
+        body.setLinearVelocity(body.getLinearVelocity().x, 100f);
+
+
         return false;
     }
 
