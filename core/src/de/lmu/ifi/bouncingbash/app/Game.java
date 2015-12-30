@@ -9,9 +9,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -44,8 +46,8 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	private World world;
 
-	private RollStates rollStates;
-
+	final float PIXELS_TO_METERS = 100f;
+	Box2DDebugRenderer debugRenderer;
 
 	private static final float MAX_MOVEMENT_SPEED = 250;
 	@Override
@@ -72,20 +74,26 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		Gdx.input.setInputProcessor(this);
 		//
 		PolygonShape shape1 = new PolygonShape();
-		shape1.setAsBox(spriteBall.getWidth() / 2, spriteBall.getHeight() / 2);
+		shape1.setAsBox(
+				(spriteBall.getWidth() )/PIXELS_TO_METERS/2,
+				(spriteBall.getHeight())/PIXELS_TO_METERS/2);
 		PolygonShape shape2 = new PolygonShape();
-		shape2.setAsBox(spritePlatform.getWidth()/2 , spritePlatform.getHeight() /2 );
+		shape2.setAsBox(
+				(spritePlatform.getWidth()/2)
+				, (spritePlatform.getHeight() /2) );
 
 		// Sprite1's Physics body
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		bodyDef.position.set(spriteBall.getX() , spriteBall.getY() );
+		bodyDef.position.set(
+				(spriteBall.getX() +spriteBall.getWidth()/2)/PIXELS_TO_METERS,
+				spriteBall.getY()/PIXELS_TO_METERS );
 		body1= world.createBody(bodyDef);
 
 		// Sprite2's physics body
 		BodyDef bodyDef2 = new BodyDef();
 		bodyDef2.type = BodyDef.BodyType.StaticBody;
-		bodyDef2.position.set(spritePlatform.getX(), spritePlatform.getY());
+		bodyDef2.position.set(spritePlatform.getX()+spritePlatform.getWidth()/2, spritePlatform.getY());
 		body2 = world.createBody(bodyDef2);
 
 		FixtureDef fixtureDef = new FixtureDef();
@@ -104,7 +112,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 		FixtureDef fixtureDef2 = new FixtureDef();
 		EdgeShape edgeShape = new EdgeShape();
-		edgeShape.set(-w/2,0,w/2,0);
+		edgeShape.set(-w / 2, 0, w / 2, 0);
 		System.out.println("w: "+w+" h: "+h);
 		fixtureDef2.shape = edgeShape;
 
@@ -116,6 +124,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		shape2.dispose();
 
 		collision();
+		debugRenderer = new Box2DDebugRenderer();
 	}
 
 	private void collision() {
@@ -126,8 +135,6 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 				Body fB = contact.getFixtureB().getBody();
 				if((fA == body2 && fB == body1) ||
 						(fA == body1 && fB == body2)) {
-					body1.applyForceToCenter(0, 600,true);
-
 
 					System.out.println("CONTACT " + "bodyC: " + body1.getPosition().x + " " + body1.getPosition().y);
 					System.out.println(""+fA+" "+fB);
@@ -152,12 +159,16 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	public void render () {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		world.step(1f / 60f, 6, 2);
+		world.step(1f / 30f, 6, 2);
 		// Now update the spritee position accordingly to it's now updated Physics body
-		spriteBall.setPosition(body1.getPosition().x, body1.getPosition().y);
+		spriteBall.setPosition(
+				(body1.getPosition().x*PIXELS_TO_METERS)- spriteBall.getWidth()/2,
+				(body1.getPosition().y * PIXELS_TO_METERS)-spriteBall.getHeight()/2 );
 
 		batch.disableBlending();
 		batch.begin();
+		Matrix4 debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS,
+				PIXELS_TO_METERS, 0);
 		batch.draw(spriteBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		batch.enableBlending();
 		batch.draw(spriteBall, spriteBall.getX(), spriteBall.getY());
@@ -172,26 +183,17 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		//System.out.println("X1: "+ body1.getPosition().x+" Y1: "+ body1.getPosition().y);
 		batch.end();
 
+		debugRenderer.render(world, debugMatrix);
+
+
 	}
 
 	public void roll()
 	{
 		float adjustedY = Gdx.input.getAccelerometerY();
-		body1.setLinearVelocity(adjustedY * 40, 0);
-		if( (adjustedY<1||adjustedY>-1) && RollStates.STAND!=rollStates)
-		{
-			rollStates=RollStates.STAND;
-		}
-		if(adjustedY>1 && RollStates.RIGHT!=rollStates)
-		{
-			body1.setLinearVelocity(adjustedY * 40, 0);
-			rollStates=RollStates.RIGHT;
-		}
-		if(adjustedY<-1 && RollStates.LEFT!=rollStates)
-		{
-			body1.setLinearVelocity(adjustedY * 40, 0);
-			rollStates=RollStates.LEFT;
-		}
+		body1.setLinearVelocity(adjustedY , 0);
+
+
 	}
 
 
@@ -214,8 +216,8 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		Gdx.app.log("Controller", "pressed Jump");
+		body1.setLinearVelocity(body1.getLinearVelocity().x,100f);
 
-		body1.setLinearVelocity(0, 300f);
 
 
 		return false;
