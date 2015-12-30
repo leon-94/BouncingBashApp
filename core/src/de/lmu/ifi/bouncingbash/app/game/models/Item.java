@@ -1,6 +1,7 @@
 package de.lmu.ifi.bouncingbash.app.game.models;
 
-import android.graphics.Bitmap;
+
+import com.badlogic.gdx.graphics.Texture;
 
 /**
  * Created by Michael on 11.12.2015.
@@ -9,7 +10,7 @@ public class Item {
     private EffectType type;
     private int xCoordinates;
     private int yCoordinates;
-    private Bitmap texture;
+    private Texture texture;
 
     public int getxCoordinates() {
         return xCoordinates;
@@ -19,7 +20,7 @@ public class Item {
         return yCoordinates;
     }
 
-    public Bitmap getTexture() {
+    public Texture getTexture() {
         return texture;
     }
 
@@ -31,7 +32,7 @@ public class Item {
         this.yCoordinates = yCoordinates;
     }
 
-    public void setTexture(Bitmap texture) {
+    public void setTexture(Texture texture) {
         this.texture = texture;
     }
 }

@@ -1,5 +1,8 @@
 package de.lmu.ifi.bouncingbash.app.game.models;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+
 import java.util.ArrayList;
 
 /**
@@ -8,6 +11,26 @@ import java.util.ArrayList;
 public class Map {
     private ArrayList<Platform> platformArrayList = new ArrayList<Platform>();
     private ArrayList<Item> itemArrayList = new ArrayList<Item>();
+    //große Platform in der mitte
+    private Platform mainPlatform = new Platform();
+    private Texture backGround = new Texture(Gdx.files.internal("background.png"));
+
+
+    public Platform getMainPlatform() {
+        return mainPlatform;
+    }
+
+    public void setMainPlatform(Platform mainPlatform) {
+        this.mainPlatform = mainPlatform;
+    }
+
+    public Texture getBackGround() {
+        return backGround;
+    }
+
+    public void setBackGround(Texture backGround) {
+        this.backGround = backGround;
+    }
 
     public ArrayList<Item> getItemArrayList() {
         return itemArrayList;
