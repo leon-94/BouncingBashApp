@@ -90,10 +90,12 @@ public class LoginActivity extends ActionBarActivity {
     private final Handler loginHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
+
+            if(msg.what == RestService.MESSAGE_ERROR) Utils.showConnectionErrorDialog(LoginActivity.this);
             String messageString = (String)msg.obj;
             JsonObject message = (JsonObject) Json.parse(messageString);
 
-            if(message.getBoolean("success", true)) {
+            if(message.getBoolean("success", false)) {
 
                 JsonObject credentials = (JsonObject) message.get("credentials");
                 String userId = credentials.getString("userId", null);

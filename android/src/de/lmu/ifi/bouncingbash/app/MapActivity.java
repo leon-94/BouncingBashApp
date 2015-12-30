@@ -2,6 +2,7 @@ package de.lmu.ifi.bouncingbash.app;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -29,7 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import de.lmu.ifi.bouncingbash.app.android.AndroidLauncher;
 import de.lmu.ifi.bouncingbash.app.android.R;
+import de.lmu.ifi.bouncingbash.app.connectivity.BluetoothService;
 import de.lmu.ifi.bouncingbash.app.connectivity.RestService;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, LocationListener {
@@ -40,6 +43,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public final long LOC_UPDATE_MIN_DIST = 5;
 
     private LocationManager locationManager;
+    private BluetoothService bluetoothService;
     private RestService restService;
     private GoogleMap mMap;
 
@@ -59,6 +63,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mapFragment.getMapAsync(this);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        bluetoothService = BluetoothService.initBluetoothService(btHandler);
 
         sessionMarkers = new HashMap<>();
 
@@ -96,7 +101,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         positionMarker = mMap.addMarker(new MarkerOptions()
                 .position(position)
                 .title("Your Position")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_position)));
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_position))
+                .visible(false));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
 
         restService.getSessions(restHandler);
@@ -200,20 +206,34 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
         return sessions;
     }
+    private void openSessionPolling() {
+        restService.openSessionPolling(restHandler);
+    }
+
 
     private void startConnection(Session session) {
 
-        progress.setMessage("Bluetooth connection is being established ...");
+        if(session.getHostId().equals(restService.getUserId())) {
+
+            progress = ProgressDialog.show(MapActivity.this, "Connecting",
+                    "Bluetooth connection is being established ...", true);
+            bluetoothService.openServer();
+        }
+        else {
+            progress.setMessage("Bluetooth connection is being established ...");
+            bluetoothService.connectToServer(session.getHostMac());
+        }
+    }
+
+    private void startGame() {
+        Intent i = new Intent(this, AndroidLauncher.class);
+        startActivity(i);
     }
 
     private final Handler restHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-
-            if(msg.what != RestService.MESSAGE_SERVER_RESPONSE) {
-                Log.e(TAG, "????");
-                return;
-            }
+            if(msg.what == RestService.MESSAGE_ERROR) Utils.showConnectionErrorDialog(MapActivity.this);
 
             String stringMessage = (String) msg.obj;
             JsonObject message = (JsonObject) Json.parse(stringMessage);
@@ -227,16 +247,54 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             switch(type) {
                 case "postsession":
+                    openSessionPolling();
                     break;
                 case "getsessions":
                     JsonArray jsonSessions = (JsonArray)message.get("sessions");
                     updateSessions(convertSessionArray(jsonSessions));
                     break;
+                case "opensessionpolling":
+                    if(message.getBoolean("open", true)) {
+                        openSessionPolling();
+                    }
+                    else {
+                        Session session = Session.fromJson((JsonObject) message.get("session"));
+                        startConnection(session);
+                    }
+                    break;
                 case "joinsession":
-                    Session session = Session.fromJson((JsonObject)message.get("session"));
-                    startConnection(session);
+                    Session session2 = Session.fromJson((JsonObject)message.get("session"));
+                    startConnection(session2);
                     break;
                 default: break;
+            }
+        }
+    };
+
+
+    private final Handler btHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+
+            switch (msg.what) {
+                case BluetoothService.MESSAGE_READ:
+                    byte[] readBuf = (byte[]) msg.obj;
+                    String readMessage = new String(readBuf, 0, msg.arg1);
+                    Log.d(TAG, readMessage);
+                    break;
+                case BluetoothService.MESSAGE_STATE_CHANGE:
+                    int state = (int)msg.obj;
+                    if(state == BluetoothService.STATE_CONNECTED) startGame();
+                    break;
+                case BluetoothService.MESSAGE_DEVICE_NAME:
+                    break;
+                case BluetoothService.MESSAGE_CONN_FAILED:
+                    break;
+                case BluetoothService.MESSAGE_CONN_LOST:
+                    break;
+                default:
+                    Log.e(TAG, "btHandler received UNKNOWN message");
+                    break;
             }
         }
     };

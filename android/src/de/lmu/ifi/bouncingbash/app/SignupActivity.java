@@ -92,6 +92,8 @@ public class SignupActivity extends ActionBarActivity {
     private final Handler signupHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
+            if(msg.what == RestService.MESSAGE_ERROR) Utils.showConnectionErrorDialog(SignupActivity.this);
+
             String messageString = (String)msg.obj;
             JsonObject message = (JsonObject) Json.parse(messageString);
 

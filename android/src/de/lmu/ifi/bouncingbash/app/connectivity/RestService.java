@@ -13,9 +13,7 @@ public class RestService {
     private final String TAG = "RestService";
 
     public static final int MESSAGE_SERVER_RESPONSE = 0;
-    //public static final int MESSAGE_OPEN_CONNECTION = 1;
-    //public static final int MESSAGE_CONNECT = 2;
-    //public static final int MESSAGE_GAME = 3;
+    public static final int MESSAGE_ERROR = 1;
 
     //private final String IP = "http://192.168.2.103:8080";
     private final String IP = "http://192.168.2.110:8080";
@@ -34,6 +32,9 @@ public class RestService {
         userId = id;
         password = pw;
         Log.d(TAG, "set credentials to: " + id + ", " + pw);
+    }
+    public String getUserId() {
+        return userId;
     }
 
     private void performHttpRequest(String url, String method, String data, Handler handler) {
@@ -119,6 +120,13 @@ public class RestService {
         JsonObject message = createAuthenticatedMessage();
 
         performHttpRequest(BASE_URL + "getsessions", "POST", message.toString(), handler);
+    }
+
+    public void openSessionPolling(Handler handler) {
+
+        JsonObject message = createAuthenticatedMessage();
+
+        performHttpRequest(BASE_URL + "opensessionpolling", "POST", message.toString(), handler);
     }
 
     public void joinSession(String hostId, Handler handler) {
