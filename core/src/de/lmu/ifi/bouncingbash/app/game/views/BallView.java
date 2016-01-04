@@ -38,9 +38,9 @@ public class BallView {
     }
     public void setupBall()
     {
-        textureBall = gameModel.getPlayer().getBall().getTexture();
+        textureBall = new Texture(Gdx.files.internal(gameModel.getPlayer1().getBall().getTexture()));
 
-        spriteBall = gameModel.getPlayer().getBall().getSprite();
+        spriteBall = new Sprite(textureBall);
         spriteBall.setPosition(Gdx.graphics.getWidth() / 2 - spriteBall.getWidth() / 2,
                 Gdx.graphics.getHeight() / 2);
 

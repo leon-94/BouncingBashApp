@@ -21,7 +21,7 @@ public class BackgroundView {
     {
         this.gameModel= gameModel;
         this.batch=batch;
-        textureBackground = gameModel.getMap().getBackGround();
+        textureBackground = new Texture(Gdx.files.internal("background.png"));
         spriteBackground = new Sprite(textureBackground);
 
     }

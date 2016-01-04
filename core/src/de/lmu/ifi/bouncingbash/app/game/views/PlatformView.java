@@ -1,6 +1,7 @@
 package de.lmu.ifi.bouncingbash.app.game.views;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -34,7 +35,8 @@ public class PlatformView {
     /**texture, sprite und body der MainPlatform definiert**/
     public void setupMainPlatform()
     {
-        texturePlatform = gameModel.getMap().getMainPlatform().getTexture();
+        texturePlatform = new Texture(Gdx.files.internal("platform.png"));
+
         spritePlatform = new Sprite(texturePlatform);
         spritePlatform.setPosition(gameModel.getMap().getMainPlatform().getHeight(), 0);
         spritePlatform.setSize(gameModel.getMap().getMainPlatform().getWidth(),

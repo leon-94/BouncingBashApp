@@ -17,6 +17,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
+import de.lmu.ifi.bouncingbash.app.game.GameController;
 import de.lmu.ifi.bouncingbash.app.game.models.Ball;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.views.BackgroundView;
@@ -27,7 +28,6 @@ import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
 public class Game extends ApplicationAdapter  {
 	private SpriteBatch batch;
 	private GameModel gameModel;
-	private Ball b;
 	private Body body1,body2,bodyEdgeScreen;
 
 	private World world;
@@ -39,9 +39,9 @@ public class Game extends ApplicationAdapter  {
 	private BackgroundView backgroundView;
 	@Override
 	public void create () {
-		gameModel = new GameModel();
-		b = gameModel.getPlayer().getBall();
-		b.setyCoordinates(gameModel.getMap().getMainPlatform().getHeight());
+		GameController gameController = new GameController();
+		gameModel = gameController.getGameModel();
+
 		world = new World(new Vector2(0, -100f),true);
 
 		batch = new SpriteBatch();

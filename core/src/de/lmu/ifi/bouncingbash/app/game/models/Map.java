@@ -13,7 +13,7 @@ public class Map {
     private ArrayList<Item> itemArrayList = new ArrayList<Item>();
     //große Platform in der mitte
     private Platform mainPlatform = new Platform();
-    private Texture backGround = new Texture(Gdx.files.internal("background.png"));
+    private String backGround = "background.png";
 
 
     public Platform getMainPlatform() {
@@ -24,11 +24,11 @@ public class Map {
         this.mainPlatform = mainPlatform;
     }
 
-    public Texture getBackGround() {
+    public String getBackGround() {
         return backGround;
     }
 
-    public void setBackGround(Texture backGround) {
+    public void setBackGround(String backGround) {
         this.backGround = backGround;
     }
 
