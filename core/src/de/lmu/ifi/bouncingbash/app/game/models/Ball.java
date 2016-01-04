@@ -18,9 +18,8 @@ public class Ball {
     private Sprite sprite = new Sprite(texture);
 
     private Item item=null;
-    private JumpStates jumpState= JumpStates.STANDING;
     private float jumpSpeed=20;
-    private float originalJumpSpeed=20;
+
     /**ycoordinaten vor dem Sprung**/
     private float yCoordinatesOriginal=0;
 
@@ -31,14 +30,6 @@ public class Ball {
 
     public void setSprite(Sprite sprite) {
         this.sprite = sprite;
-    }
-
-    public float getOriginalJumpSpeed() {
-        return originalJumpSpeed;
-    }
-
-    public void setOriginalJumpSpeed(float originalJumpSpeed) {
-        this.originalJumpSpeed = originalJumpSpeed;
     }
 
     public float getyCoordinatesOriginal() {
@@ -55,14 +46,6 @@ public class Ball {
 
     public void setJumpSpeed(float jumpSpeed) {
         this.jumpSpeed = jumpSpeed;
-    }
-
-    public JumpStates getJumpState() {
-        return jumpState;
-    }
-
-    public void setJumpState(JumpStates jumpState) {
-        this.jumpState = jumpState;
     }
 
     public void setItem(Item item) {
