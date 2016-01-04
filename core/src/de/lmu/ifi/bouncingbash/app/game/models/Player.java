@@ -7,7 +7,7 @@ package de.lmu.ifi.bouncingbash.app.game.models;
 public class Player {
     private Ball ball;
     /**als Identifikation für denjeningen der das Spiel angeboten/gestartet hat**/
-    private boolean host;
+    private boolean host=false;
     public Player()
     {
         ball = new Ball();

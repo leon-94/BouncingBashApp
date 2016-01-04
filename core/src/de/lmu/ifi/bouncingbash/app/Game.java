@@ -18,11 +18,11 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import de.lmu.ifi.bouncingbash.app.game.GameController;
-import de.lmu.ifi.bouncingbash.app.game.models.Ball;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.views.BackgroundView;
 import de.lmu.ifi.bouncingbash.app.game.views.BallView;
 import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
+
 
 /***Spiel das gezeichnet wird**/
 public class Game extends ApplicationAdapter  {

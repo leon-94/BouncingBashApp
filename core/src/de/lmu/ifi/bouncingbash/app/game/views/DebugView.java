@@ -21,7 +21,7 @@ public class DebugView {
     {
         this.gameModel= gameModel;
         this.batch=batch;
-        textureBackground = gameModel.getMap().getBackGround();
+        textureBackground = new Texture(Gdx.files.internal(gameModel.getMap().getBackGround()));
         spriteBackground = new Sprite(textureBackground);
 
     }

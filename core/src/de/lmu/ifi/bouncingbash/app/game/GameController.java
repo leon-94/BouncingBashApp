@@ -2,9 +2,10 @@ package de.lmu.ifi.bouncingbash.app.game;
 
 import com.badlogic.gdx.math.MathUtils;
 
-import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Item;
 import de.lmu.ifi.bouncingbash.app.game.models.Platform;
+import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
+
 
 /**
  * Created by Michi on 31.12.2015.
@@ -19,7 +20,7 @@ public class GameController {
         gameModel = new GameModel();
 
     }
-    /**Anzahl der Platformen außer MainPlatform zufällig generieren**/
+    /**Anzahl der Platformen außer MainPlatform zufällig generieren nur ne Idee kann auch fest gemacht werden**/
     private void randomPlatformGenerator()
     {
         int p = MathUtils.random(0,6);

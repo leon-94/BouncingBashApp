@@ -1,8 +1,6 @@
 package de.lmu.ifi.bouncingbash.app.game.models;
 
 
-import com.badlogic.gdx.graphics.Texture;
-
 /**
  * Created by Michael on 11.12.2015.
  */
