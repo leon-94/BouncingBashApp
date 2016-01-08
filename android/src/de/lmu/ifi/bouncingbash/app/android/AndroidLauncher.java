@@ -1,15 +1,24 @@
 package de.lmu.ifi.bouncingbash.app.android;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+
+import de.lmu.ifi.bouncingbash.app.Data;
 import de.lmu.ifi.bouncingbash.app.Game;
+import de.lmu.ifi.bouncingbash.app.IActivity;
+import de.lmu.ifi.bouncingbash.app.MapActivity;
 import de.lmu.ifi.bouncingbash.app.MotionDemo;
+import de.lmu.ifi.bouncingbash.app.connectivity.BluetoothService;
+
 import android.util.Log;
-public class AndroidLauncher extends AndroidApplication {
+public class AndroidLauncher extends AndroidApplication implements IActivity{
+
+    private final String TAG = "AndroidLauncher";
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -17,7 +26,17 @@ public class AndroidLauncher extends AndroidApplication {
 		AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
 		cfg.useAccelerometer = true;
 		cfg.useCompass = true;
-		initialize(new Game(), cfg);
+
+		initialize(new Game(this, BluetoothService.getBluetoothService(), Data.isHost), cfg);
 
 	}
+
+    public void exitGame(boolean won) {
+        Log.d(TAG, "exitGame");
+        Data.currentSession = null;
+        Data.isHost = false;
+
+        Intent i = new Intent(this, MapActivity.class);
+        startActivity(i);
+    }
 }

@@ -64,10 +64,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         bluetoothService = BluetoothService.initBluetoothService(btHandler);
+        restService = RestService.getRestService();
 
         sessionMarkers = new HashMap<>();
-
-        restService = RestService.getRestService();
     }
 
 
@@ -102,8 +101,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 .position(position)
                 .title("Your Position")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_position))
-                .visible(false));
+                .visible(true));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(19f));
 
         restService.getSessions(restHandler);
     }
@@ -213,19 +213,58 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private void startConnection(Session session) {
 
-        if(session.getHostId().equals(restService.getUserId())) {
+        progress.setMessage("Bluetooth connection is being established ...");
 
-            progress = ProgressDialog.show(MapActivity.this, "Connecting",
-                    "Bluetooth connection is being established ...", true);
-            bluetoothService.openServer();
-        }
-        else {
-            progress.setMessage("Bluetooth connection is being established ...");
-            bluetoothService.connectToServer(session.getHostMac());
-        }
+        // save session details
+        Data.currentSession = session;
+        Data.isHost = session.getHostId().equals(Data.userId);
+
+        // start Bluetooth connection
+        if(Data.isHost) bluetoothService.openServer();
+        else bluetoothService.connectToServer(session.getHostMac());
     }
 
     private void startGame() {
+
+        /*
+        // write ping
+        new Thread() {
+            @Override
+            public void run() {
+                int i = 0;
+                while (i < 1000) {
+                    String s = "ping #" + i;
+                    Log.d(TAG, "Writing: " + s);
+                    bluetoothService.write(s);
+                    i++;
+                    try {
+                        Thread.sleep(40);
+                    } catch (InterruptedException e) { e.printStackTrace(); }
+                }
+            }
+        }.start();
+
+        // read ping
+        new Thread() {
+            @Override
+            public void run() {
+                int i = 0;
+                while (i < 1500) {
+                    String[] ss = bluetoothService.read();
+                    if(ss != null) {
+                        Log.d(TAG, "Reading: ");
+                        for(int j = 0; j < ss.length; j++) {
+                            Log.d(TAG, "    "+ j +":"+ ss[j]);
+                        }
+                    }
+                    i++;
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) { e.printStackTrace(); }
+                }
+            }
+        }.start();*/
+
         Intent i = new Intent(this, AndroidLauncher.class);
         startActivity(i);
     }
@@ -233,7 +272,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private final Handler restHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if(msg.what == RestService.MESSAGE_ERROR) Utils.showConnectionErrorDialog(MapActivity.this);
+            if(msg.what == RestService.MESSAGE_ERROR) {
+                Utils.showConnectionErrorDialog(MapActivity.this);
+                return;
+            }
 
             String stringMessage = (String) msg.obj;
             JsonObject message = (JsonObject) Json.parse(stringMessage);
@@ -247,6 +289,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             switch(type) {
                 case "postsession":
+                    progress = ProgressDialog.show(MapActivity.this, "Connecting",
+                            "Waiting for somebody to join ...", true);
                     openSessionPolling();
                     break;
                 case "getsessions":
@@ -289,6 +333,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 case BluetoothService.MESSAGE_DEVICE_NAME:
                     break;
                 case BluetoothService.MESSAGE_CONN_FAILED:
+                    String mac = (String)msg.obj;
+                    bluetoothService.connectToServer(mac);
                     break;
                 case BluetoothService.MESSAGE_CONN_LOST:
                     break;

@@ -31,6 +31,9 @@ public class LoginActivity extends ActionBarActivity {
 
         edit_userid = (EditText) findViewById(R.id.edit_login_userid);
         edit_password = (EditText) findViewById(R.id.edit_login_password);
+
+        Utils.enableBluetooth(this);
+        Utils.enableLocation(this);
     }
 
     @Override
@@ -91,7 +94,10 @@ public class LoginActivity extends ActionBarActivity {
         @Override
         public void handleMessage(Message msg) {
 
-            if(msg.what == RestService.MESSAGE_ERROR) Utils.showConnectionErrorDialog(LoginActivity.this);
+            if(msg.what == RestService.MESSAGE_ERROR) {
+                Utils.showConnectionErrorDialog(LoginActivity.this);
+                return;
+            }
             String messageString = (String)msg.obj;
             JsonObject message = (JsonObject) Json.parse(messageString);
 
@@ -100,9 +106,9 @@ public class LoginActivity extends ActionBarActivity {
                 JsonObject credentials = (JsonObject) message.get("credentials");
                 String userId = credentials.getString("userId", null);
                 String password = credentials.getString("password", null);
-                RestService.getRestService().setCredentials(userId, password);
+                Data.setCredentials(userId, password);
 
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                Intent i = new Intent(LoginActivity.this, MapActivity.class);
                 startActivity(i);
             }
             else {

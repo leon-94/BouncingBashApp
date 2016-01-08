@@ -10,9 +10,13 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.UUID;
 
-public class BluetoothService {
+import de.lmu.ifi.bouncingbash.app.IBluetoothService;
+
+public class BluetoothService implements IBluetoothService {
 
     public static BluetoothService bluetoothService;
 
@@ -34,6 +38,8 @@ public class BluetoothService {
     private Handler handler;
     private BluetoothAdapter bluetoothAdapter;
     private int state;
+    private ArrayList<String> queue = new ArrayList<>();
+    private boolean queueing = false;
 
     private AcceptThread acceptThread;
     private ConnectThread connectThread;
@@ -45,6 +51,8 @@ public class BluetoothService {
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
+
+    // static methods -----------------------------------------------------------------------------
 
     public static BluetoothService initBluetoothService(Handler h) {
         bluetoothService = new BluetoothService(h);
@@ -58,6 +66,8 @@ public class BluetoothService {
     public static void setHandler(Handler h) {
         bluetoothService.handler = h;
     }
+
+    // instance methods ---------------------------------------------------------------------------
 
     private BluetoothService(Handler h) {
         state = STATE_NONE;
@@ -73,6 +83,12 @@ public class BluetoothService {
     public synchronized int getState() {
         return state;
     }
+
+    public synchronized boolean isQueueing() { return queueing; }
+    public synchronized void setQueueing(boolean q) { queueing = q; }
+
+
+    // connection methods ---------------------------------------------------------------------------
 
     public void openServer() {
         Log.i(TAG, "openServer");
@@ -101,6 +117,13 @@ public class BluetoothService {
     public void connectToServer(String mac) {
         Log.i(TAG, "connectToServer, MAC: " + mac);
 
+        if(state == STATE_CONNECTING) {
+            if(connectThread != null) {
+                connectThread.cancel();
+                connectThread = null;
+            }
+        }
+
         // Cancel any thread listening for a connection
         if (acceptThread != null) {
             acceptThread.cancel();
@@ -113,10 +136,9 @@ public class BluetoothService {
             connectedThread = null;
         }
 
-        setState(STATE_CONNECTING);
-
         connectThread = new ConnectThread(mac);
         connectThread.start();
+        setState(STATE_CONNECTING);
     }
 
     public synchronized void connected(BluetoothSocket socket, BluetoothDevice device) {
@@ -170,7 +192,22 @@ public class BluetoothService {
         setState(STATE_NONE);
     }
 
-    public void write(String out) { write(out.getBytes()); }
+    public synchronized String[] read() {
+        if(!queueing) return null;
+
+        String[] result = new String[queue.size()];
+        queue.toArray(result);
+        queue.clear();
+
+        return result;
+    }
+
+    public void write(String out) {
+        try {
+            byte[] b = out.getBytes("US-ASCII");
+            write(b);
+        } catch(UnsupportedEncodingException e) { e.printStackTrace(); }
+    }
     public void write(byte[] out) {
         // Create temporary object
         ConnectedThread r;
@@ -183,18 +220,18 @@ public class BluetoothService {
         r.write(out);
     }
 
-    private void connectionFailed() {
+    private void connectionFailed(String mac) {
         // Send a failure message back to the Activity
-        handler.obtainMessage(MESSAGE_CONN_FAILED).sendToTarget();
+        handler.obtainMessage(MESSAGE_CONN_FAILED, mac).sendToTarget();
     }
 
-    /**
-     * Indicate that the connection was lost and notify the UI Activity.
-     */
     private void connectionLost() {
         // Send a failure message back to the Activity
         handler.obtainMessage(MESSAGE_CONN_LOST).sendToTarget();
     }
+
+
+    // inner classes ------------------------------------------------------------------------------
 
     private class ConnectedThread extends Thread {
 
@@ -231,8 +268,16 @@ public class BluetoothService {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
 
-                    // Send the obtained bytes to the UI Activity
-                    handler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    if(queueing) {
+                        // write bytes into queue
+                        String s = new String(buffer, 0, bytes, "US-ASCII");
+                        Log.d(TAG, "receiving: "+s);
+                        queue.add(s);
+                    }
+                    else {
+                        // Send the obtained bytes to the UI Activity
+                        handler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    }
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
@@ -247,6 +292,7 @@ public class BluetoothService {
                 mmOutStream.write(buffer);
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
+                handler.obtainMessage(MESSAGE_CONN_LOST);
             }
         }
 
@@ -324,9 +370,11 @@ public class BluetoothService {
 
         private final BluetoothSocket socket;
         private final BluetoothDevice device;
+        private final String address;
 
         public ConnectThread(String address) {
             super();
+            this.address = address;
             device = bluetoothAdapter.getRemoteDevice(address);
             BluetoothSocket tmp = null;
 
@@ -343,8 +391,6 @@ public class BluetoothService {
         public void run() {
 
             try {
-                //mmDevice.createBond();
-
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 Log.i(TAG, "connect");
@@ -360,6 +406,7 @@ public class BluetoothService {
                     closeException.printStackTrace();
                     Log.e(TAG, "exeption during close()");
                 }
+                connectionFailed(address);
                 return;
             }
 

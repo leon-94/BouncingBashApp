@@ -92,7 +92,10 @@ public class SignupActivity extends ActionBarActivity {
     private final Handler signupHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
-            if(msg.what == RestService.MESSAGE_ERROR) Utils.showConnectionErrorDialog(SignupActivity.this);
+            if(msg.what == RestService.MESSAGE_ERROR) {
+                Utils.showConnectionErrorDialog(SignupActivity.this);
+                return;
+            }
 
             String messageString = (String)msg.obj;
             JsonObject message = (JsonObject) Json.parse(messageString);
@@ -101,14 +104,14 @@ public class SignupActivity extends ActionBarActivity {
 
                 String userId = message.getString("userId", null);
                 String password = message.getString("password", null);
-                RestService.getRestService().setCredentials(userId, password);
+                Data.setCredentials(userId, password);
 
                 alertDialogBuilder
                         .setMessage("Sign up successful!")
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                Intent i = new Intent(SignupActivity.this, MainActivity.class);
+                                Intent i = new Intent(SignupActivity.this, MapActivity.class);
                                 startActivity(i);
                             }
                         });

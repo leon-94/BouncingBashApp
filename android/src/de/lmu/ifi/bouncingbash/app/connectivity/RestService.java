@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.eclipsesource.json.JsonObject;
 
+import de.lmu.ifi.bouncingbash.app.Data;
+
 /**
  * Created by Leon on 01.12.2015.
  */
@@ -15,26 +17,18 @@ public class RestService {
     public static final int MESSAGE_SERVER_RESPONSE = 0;
     public static final int MESSAGE_ERROR = 1;
 
-    //private final String IP = "http://192.168.2.103:8080";
-    private final String IP = "http://192.168.2.110:8080";
-    private final String BASE_URL = IP + "/BouncingBashServer/service/";
-    private String userId;
-    private String password;
+    //private final String IP = "192.168.2.103";
+    //private final String IP = "192.168.2.106";
+    private final String IP = "10.181.31.228";
+    private final String BASE_URL = "http://"+ IP +":8080/BouncingBashServer/service/";
+    //private String userId;
+    //private String password;
 
     private static RestService restService;
 
     public static RestService getRestService() {
         if(restService == null) restService = new RestService();
         return restService;
-    }
-
-    public void setCredentials(String id, String pw) {
-        userId = id;
-        password = pw;
-        Log.d(TAG, "set credentials to: " + id + ", " + pw);
-    }
-    public String getUserId() {
-        return userId;
     }
 
     private void performHttpRequest(String url, String method, String data, Handler handler) {
@@ -68,8 +62,8 @@ public class RestService {
     public void signUp(Handler handler) {
 
         JsonObject message = new JsonObject();
-        message.add("userId", userId);
-        message.add("password", password);
+        message.add("userId", Data.userId);
+        message.add("password", Data.password);
 
         performHttpRequest(BASE_URL + "signup", "POST", message.toString(), handler);
     }
@@ -86,8 +80,8 @@ public class RestService {
     private JsonObject createAuthenticatedMessage() {
 
         JsonObject credentials = new JsonObject();
-        credentials.add("userId", userId);
-        credentials.add("password", password);
+        credentials.add("userId", Data.userId);
+        credentials.add("password", Data.password);
 
         JsonObject message = new JsonObject();
         message.add("credentials", credentials);
