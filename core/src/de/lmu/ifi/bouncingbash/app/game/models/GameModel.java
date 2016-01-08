@@ -1,44 +1,44 @@
 package de.lmu.ifi.bouncingbash.app.game.models;
 
-import java.util.ArrayList;
-
 /**
  * Created by Michael on 11.12.2015.
  */
 public class GameModel {
-    private Map map = new Map();
-    private Player player;
-    private Player enemy;
+
+    private de.lmu.ifi.bouncingbash.app.game.models.Map map;
+    /**Player who sends the game Request**/
+    private Player player1;
+    private Player player2;
 
     public GameModel()
     {
-        map = new Map();
-        player =  new Player(map);
-        enemy =  new Player(map);
-
+        map = new de.lmu.ifi.bouncingbash.app.game.models.Map();
+        player1 = new Player();
+        player2 = new Player();
+        player1.setHost(true);
     }
 
-    public Player getPlayer() {
-        return player;
+    public Player getPlayer1() {
+        return player1;
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
+    public void setPlayer1(Player player1) {
+        this.player1 = player1;
     }
 
-    public Player getEnemy() {
-        return enemy;
+    public Player getPlayer2() {
+        return player2;
     }
 
-    public void setEnemy(Player enemy) {
-        this.enemy = enemy;
+    public void setPlayer2(Player player2) {
+        this.player2 = player2;
     }
 
-    public Map getMap() {
+    public de.lmu.ifi.bouncingbash.app.game.models.Map getMap() {
         return map;
     }
 
-    public void setMap(Map map) {
+    public void setMap(de.lmu.ifi.bouncingbash.app.game.models.Map map) {
         this.map = map;
     }
 

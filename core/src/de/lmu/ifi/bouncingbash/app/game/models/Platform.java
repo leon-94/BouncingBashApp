@@ -10,15 +10,15 @@ import com.badlogic.gdx.graphics.Texture;
 /**Model für die Hauptplatform und kleinere Platformen in der Karte**/
 public class Platform {
 
-    private Texture texture = new Texture(Gdx.files.internal("platform.png"));
+    private String texture = "platform.png";
     private int height= 30 ;
     private int width =  Gdx.graphics.getWidth()-60;
 
-    public Texture getTexture() {
+    public String getTexture() {
         return texture;
     }
 
-    public void setTexture(Texture texture) {
+    public void setTexture(String texture) {
         this.texture = texture;
     }
 
