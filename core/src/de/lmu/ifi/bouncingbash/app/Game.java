@@ -26,7 +26,13 @@ import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
 
 /***Spiel das gezeichnet wird**/
 public class Game extends ApplicationAdapter  {
-	private SpriteBatch batch;
+
+	private IBluetoothService btService;
+	private IActivity activity;
+	private boolean isHost;
+	private long lastWritingTime;
+
+    private SpriteBatch batch;
 	private GameModel gameModel;
 	private Body body1,body2,bodyEdgeScreen;
 
@@ -37,6 +43,55 @@ public class Game extends ApplicationAdapter  {
 	private PlatformView platformView;
 	private BallView ballView;
 	private BackgroundView backgroundView;
+
+
+
+	public Game(IActivity act, IBluetoothService bts, boolean host) {
+		super();
+		btService = bts;
+		btService.setQueueing(true);
+		isHost = host;
+
+		activity = act;
+	}
+
+	private void exitGame(boolean won) {
+		System.out.println("exitGame");
+		activity.exitGame(won);
+	}
+
+	private void exitInFive() {
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+				}
+				exitGame(true);
+			}
+		}.start();
+	}
+
+	/*private void writeToConn() {
+		if(isHost && System.currentTimeMillis() - lastWritingTime > 24) {
+			btService.write(Float.toString(x) + "," + Float.toString(y));
+			lastWritingTime = System.currentTimeMillis();
+		}
+		else {
+			String[] messages = btService.read();
+			if(messages == null || messages.length == 0) return;
+			String latest = messages[messages.length-1];
+			System.out.println("latest message: "+latest);
+			String[] split = latest.split(",");
+			float _x = Float.parseFloat(split[0]);
+			float _y = Float.parseFloat(split[1]);
+			x = _x;
+			y = _y;
+		}
+	}*/
+
+
 	@Override
 	public void create () {
 		GameController gameController = new GameController();

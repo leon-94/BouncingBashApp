@@ -35,6 +35,7 @@ import de.lmu.ifi.bouncingbash.app.android.R;
 import de.lmu.ifi.bouncingbash.app.connectivity.BluetoothService;
 import de.lmu.ifi.bouncingbash.app.connectivity.RestService;
 
+
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, LocationListener {
 
     private final String TAG = "MapActivity";
