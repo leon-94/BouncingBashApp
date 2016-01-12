@@ -17,9 +17,7 @@ public class RestService {
     public static final int MESSAGE_SERVER_RESPONSE = 0;
     public static final int MESSAGE_ERROR = 1;
 
-    //private final String IP = "192.168.2.103";
-    //private final String IP = "192.168.2.106";
-    private final String IP = "10.181.31.228";
+    private final String IP = "192.168.2.103";
     private final String BASE_URL = "http://"+ IP +":8080/BouncingBashServer/service/";
     //private String userId;
     //private String password;

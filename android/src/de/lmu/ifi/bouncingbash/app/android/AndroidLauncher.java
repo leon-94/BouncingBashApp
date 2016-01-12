@@ -14,6 +14,7 @@ import de.lmu.ifi.bouncingbash.app.IActivity;
 import de.lmu.ifi.bouncingbash.app.MapActivity;
 import de.lmu.ifi.bouncingbash.app.MotionDemo;
 import de.lmu.ifi.bouncingbash.app.connectivity.BluetoothService;
+import de.lmu.ifi.bouncingbash.app.game.GameData;
 
 import android.util.Log;
 public class AndroidLauncher extends AndroidApplication implements IActivity{
@@ -27,14 +28,14 @@ public class AndroidLauncher extends AndroidApplication implements IActivity{
 		cfg.useAccelerometer = true;
 		cfg.useCompass = true;
 
-		initialize(new Game(this, BluetoothService.getBluetoothService(), Data.isHost), cfg);
+		initialize(new Game(this, BluetoothService.getBluetoothService()), cfg);
 
 	}
 
     public void exitGame(boolean won) {
         Log.d(TAG, "exitGame");
         Data.currentSession = null;
-        Data.isHost = false;
+        GameData.isHost = false;
 
         Intent i = new Intent(this, MapActivity.class);
         startActivity(i);

@@ -13,7 +13,7 @@ public class Data {
     public static String password = null;
 
     public static Session currentSession = null;
-    public static boolean isHost = false;
+    //public static boolean isHost = false;
 
 
     public static void setCredentials(String id, String pw) {

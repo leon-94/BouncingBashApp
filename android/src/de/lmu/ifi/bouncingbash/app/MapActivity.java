@@ -34,9 +34,13 @@ import de.lmu.ifi.bouncingbash.app.android.AndroidLauncher;
 import de.lmu.ifi.bouncingbash.app.android.R;
 import de.lmu.ifi.bouncingbash.app.connectivity.BluetoothService;
 import de.lmu.ifi.bouncingbash.app.connectivity.RestService;
+import de.lmu.ifi.bouncingbash.app.game.GameData;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, LocationListener {
+
+    private long latencies;
+    private int latencyCounter;
 
     private final String TAG = "MapActivity";
 
@@ -218,57 +222,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         // save session details
         Data.currentSession = session;
-        Data.isHost = session.getHostId().equals(Data.userId);
+        GameData.isHost = session.getHostId().equals(Data.userId);
 
         // start Bluetooth connection
-        if(Data.isHost) bluetoothService.openServer();
+        if(GameData.isHost) bluetoothService.openServer();
         else bluetoothService.connectToServer(session.getHostMac());
     }
 
     private void startGame() {
 
-        /*
-        // write ping
-        new Thread() {
-            @Override
-            public void run() {
-                int i = 0;
-                while (i < 1000) {
-                    String s = "ping #" + i;
-                    Log.d(TAG, "Writing: " + s);
-                    bluetoothService.write(s);
-                    i++;
-                    try {
-                        Thread.sleep(40);
-                    } catch (InterruptedException e) { e.printStackTrace(); }
-                }
-            }
-        }.start();
-
-        // read ping
-        new Thread() {
-            @Override
-            public void run() {
-                int i = 0;
-                while (i < 1500) {
-                    String[] ss = bluetoothService.read();
-                    if(ss != null) {
-                        Log.d(TAG, "Reading: ");
-                        for(int j = 0; j < ss.length; j++) {
-                            Log.d(TAG, "    "+ j +":"+ ss[j]);
-                        }
-                    }
-                    i++;
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException e) { e.printStackTrace(); }
-                }
-            }
-        }.start();*/
-
         Intent i = new Intent(this, AndroidLauncher.class);
         startActivity(i);
     }
+
 
     private final Handler restHandler = new Handler() {
         @Override

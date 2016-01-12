@@ -15,8 +15,10 @@ import android.widget.EditText;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 
+import de.lmu.ifi.bouncingbash.app.android.AndroidLauncher;
 import de.lmu.ifi.bouncingbash.app.android.R;
 import de.lmu.ifi.bouncingbash.app.connectivity.RestService;
+import de.lmu.ifi.bouncingbash.app.game.GameData;
 
 
 public class LoginActivity extends ActionBarActivity {
@@ -88,6 +90,14 @@ public class LoginActivity extends ActionBarActivity {
 
         // show it
         alertDialog.show();
+    }
+
+    public void startGame(View view) {
+        GameData.gameStartTime = System.currentTimeMillis();
+        GameData.debug_sp = true;
+
+        Intent i = new Intent(this, AndroidLauncher.class);
+        startActivity(i);
     }
 
     private final Handler loginHandler = new Handler(){

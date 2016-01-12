@@ -31,4 +31,10 @@
         android:text="Or sign up!"
         android:onClick="onButtonSignup"/>
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:text="Start game in debug mode"
+        android:onClick="startGame"/>
+
 </LinearLayout>

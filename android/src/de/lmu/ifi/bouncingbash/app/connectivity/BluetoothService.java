@@ -7,14 +7,23 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.UUID;
 
 import de.lmu.ifi.bouncingbash.app.IBluetoothService;
+import de.lmu.ifi.bouncingbash.app.game.Transmittable;
+import de.lmu.ifi.bouncingbash.app.game.views.BallView;
 
 public class BluetoothService implements IBluetoothService {
 
@@ -51,6 +60,8 @@ public class BluetoothService implements IBluetoothService {
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
+    private long meanLatency = 0;
+
 
     // static methods -----------------------------------------------------------------------------
 
@@ -79,13 +90,13 @@ public class BluetoothService implements IBluetoothService {
         state = s;
         handler.obtainMessage(MESSAGE_STATE_CHANGE, state).sendToTarget();
     }
-
-    public synchronized int getState() {
-        return state;
-    }
+    public synchronized int getState() { return state; }
 
     public synchronized boolean isQueueing() { return queueing; }
     public synchronized void setQueueing(boolean q) { queueing = q; }
+
+    public long getMeanLatency() { return meanLatency; }
+    public void setMeanLatency(long meanLatency) { this.meanLatency = meanLatency; }
 
 
     // connection methods ---------------------------------------------------------------------------
@@ -208,6 +219,7 @@ public class BluetoothService implements IBluetoothService {
             write(b);
         } catch(UnsupportedEncodingException e) { e.printStackTrace(); }
     }
+
     public void write(byte[] out) {
         // Create temporary object
         ConnectedThread r;
@@ -271,7 +283,7 @@ public class BluetoothService implements IBluetoothService {
                     if(queueing) {
                         // write bytes into queue
                         String s = new String(buffer, 0, bytes, "US-ASCII");
-                        Log.d(TAG, "receiving: "+s);
+                        //Log.d(TAG, "receiving: "+s);
                         queue.add(s);
                     }
                     else {
@@ -427,4 +439,82 @@ public class BluetoothService implements IBluetoothService {
         }
     }
 
+
+
+    @Override
+    public void transmit(JsonObject message) {
+
+        write(message.toString());
+    }
+
+    @Override
+    public JsonObject receiveLatest() {
+        String[] messages = read();
+        if(messages == null || messages.length == 0) return null;
+        JsonObject jsonMessage = null;
+        try {
+            jsonMessage = (JsonObject) Json.parse(messages[messages.length - 1]);
+        } catch(Exception e) { e.printStackTrace(); }
+        return jsonMessage;
+    }
+
+    @Override
+    public JsonArray receiveAll() {
+        String[] messages = read();
+        if(messages == null || messages.length == 0) return null;
+        JsonArray jsonArray = new JsonArray();
+        for(int i = 0; i < messages.length; i++) {
+            try {
+                JsonObject msg = (JsonObject) Json.parse(messages[i]);
+                jsonArray.add(msg);
+            } catch(Exception e) { e.printStackTrace(); }
+        }
+        return jsonArray;
+    }
+
+
+    /*
+    public void transmit(ArrayList<Transmittable> ts) {
+
+        JsonObject message = new JsonObject();
+        JsonArray elements = new JsonArray();
+
+        for(Transmittable t : ts) {
+            elements.add(toJsonObj(t));
+        }
+
+        message.add("elements", elements);
+        write(message.toString());
+    }
+
+    public ArrayList<Transmittable> receive() {
+        ArrayList<Transmittable> ts = new ArrayList<>();
+        String[] messages = read();
+        if(messages == null || messages.length == 0) return null;
+
+        String lastestMsg = messages[messages.length-1];
+        JsonObject message = (JsonObject) Json.parse(lastestMsg);
+        JsonArray elements = (JsonArray) message.get("elements");
+        Iterator it = elements.iterator();
+        while(it.hasNext()) {
+            JsonObject obj = (JsonObject) it.next();
+            ts.add(toTransmittable(obj));
+        }
+
+        return ts;
+    }
+
+    private JsonObject toJsonObj(Transmittable t) {
+        JsonObject obj = new JsonObject();
+
+        HashMap<String, String> map = t.getDataMap();
+        Collection values = map.values();
+        Iterator<String> it = values.iterator();
+        while(it.hasNext()) {
+            String s = it.next();
+            obj.add(s, map.get(s));
+        }
+
+        return obj;
+    }*/
 }

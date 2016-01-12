@@ -2,6 +2,7 @@ package de.lmu.ifi.bouncingbash.app.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
@@ -36,7 +37,22 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             Gdx.app.log("Controller", "pressed Jump");
-            body.setLinearVelocity(body.getLinearVelocity().x, 100f);
+            new Thread() {
+                @Override
+                public void run() {
+                    int i = 15;
+                    while(i > 0) {
+                        body.applyLinearImpulse(new Vector2(0, 7), body.getWorldCenter(), true);
+                        i--;
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.start();
+            //body.setLinearVelocity(body.getLinearVelocity().x, 100f);
 
 
             return false;
