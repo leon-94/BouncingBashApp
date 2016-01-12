@@ -24,7 +24,7 @@ public class BallView {
     private Texture textureBall;
     private Sprite spriteBall;
     final float PIXELS_TO_METERS = 100f;
-    private Body body1;
+    private Body ballBody;
     private SpriteBatch batch;
     private World world;
     public BallView(GameModel gameModel,World world,SpriteBatch batch)
@@ -48,7 +48,7 @@ public class BallView {
         bodyDef.position.set(
                 (spriteBall.getX() +spriteBall.getWidth() )/PIXELS_TO_METERS,
                 spriteBall.getY()/PIXELS_TO_METERS );
-        body1= world.createBody(bodyDef);
+        ballBody = world.createBody(bodyDef);
         //TODO circle shape
         CircleShape circleShape= new CircleShape();
         circleShape.setRadius(  (spriteBall.getHeight()) / PIXELS_TO_METERS / 2);
@@ -61,10 +61,10 @@ public class BallView {
         fixtureDef1.restitution = 0.3f;
 
 
-        Fixture fixture = body1.createFixture(fixtureDef1);
+        Fixture fixture = ballBody.createFixture(fixtureDef1);
         circleShape.dispose();
         /**setze die steuerung des Balls**/
-        BallController ballController = new BallController(gameModel,body1);
+        BallController ballController = new BallController(gameModel, ballBody);
         Gdx.input.setInputProcessor(ballController);
 
     }
@@ -72,17 +72,20 @@ public class BallView {
     public void drawBall()
     {
         spriteBall.setPosition(
-                (body1.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
-                (body1.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
-        spriteBall.setRotation(body1.getAngle()* MathUtils.radiansToDegrees);
+                (ballBody.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
+                (ballBody.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
+        spriteBall.setRotation(ballBody.getAngle()* MathUtils.radiansToDegrees);
         batch.draw(spriteBall, spriteBall.getX(), spriteBall.getY());
     }
 
     public void roll()
     {
         float adjustedY = Gdx.input.getAccelerometerY();
-        body1.setLinearVelocity(adjustedY, 0);
+        ballBody.setLinearVelocity(adjustedY, 0);
 
 
+    }
+    public Body getBallBody() {
+        return ballBody;
     }
 }

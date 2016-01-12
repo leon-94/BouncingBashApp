@@ -18,7 +18,7 @@ public class GameController {
     public GameController()
     {
         gameModel = new GameModel();
-
+        levelOne();
     }
     /**Anzahl der Platformen außer MainPlatform zufällig generieren nur ne Idee kann auch fest gemacht werden**/
     private void randomPlatformGenerator()
@@ -38,6 +38,14 @@ public class GameController {
     }
     public GameModel getGameModel() {
         return gameModel;
+    }
+
+    private void levelOne()
+    {
+        gameModel.getMap().getPlatformArrayList().add(new Platform(20,0,0));
+        gameModel.getMap().getPlatformArrayList().add(new Platform(40,0,20));
+        gameModel.getMap().getPlatformArrayList().add(new Platform(20,40,40));
+        gameModel.getMap().getPlatformArrayList().add(new Platform(40,20,40));
     }
 
 }
