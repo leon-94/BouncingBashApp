@@ -1,10 +1,12 @@
 package de.lmu.ifi.bouncingbash.app.game.views;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -24,6 +26,7 @@ public class BallView {
     private Texture textureBall;
     private Sprite spriteBall;
     final float PIXELS_TO_METERS = 100f;
+
     private Body ballBody;
     private SpriteBatch batch;
     private World world;
@@ -46,8 +49,8 @@ public class BallView {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(
-                (spriteBall.getX() +spriteBall.getWidth() )/PIXELS_TO_METERS,
-                spriteBall.getY()/PIXELS_TO_METERS );
+                (spriteBall.getX() +spriteBall.getWidth()/2 )/PIXELS_TO_METERS,
+                (spriteBall.getY()+spriteBall.getHeight()/2)/PIXELS_TO_METERS );
         ballBody = world.createBody(bodyDef);
         //TODO circle shape
         CircleShape circleShape= new CircleShape();
@@ -56,7 +59,7 @@ public class BallView {
 
         FixtureDef fixtureDef1 = new FixtureDef();
         fixtureDef1.shape = circleShape;
-        fixtureDef1.density = 1;
+        fixtureDef1.density = 1f;
         fixtureDef1.friction = 0.5f;
         fixtureDef1.restitution = 0.3f;
 
@@ -71,11 +74,18 @@ public class BallView {
 
     public void drawBall()
     {
+
         spriteBall.setPosition(
                 (ballBody.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
                 (ballBody.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
-        spriteBall.setRotation(ballBody.getAngle()* MathUtils.radiansToDegrees);
+        spriteBall.setRotation((float) Math.toDegrees(ballBody.getAngle()));
+
+        System.out.println("Ballbody rotation: " +(float)Math.toDegrees(ballBody.getAngle()) );
         batch.draw(spriteBall, spriteBall.getX(), spriteBall.getY());
+        //batch.draw(spriteBall, spriteBall.getPosition().x, spriteBall.getPosition().y, width/2, height/2, width, height, /*scaleX*/1, /*scaleY*/1, /*rotation*/
+         //       body.getAngle() * MathUtils.radToDegree, srcX, srcY, srcWidth, srcHeight, /*flipX*/false, /*flipY*/false);
+
+
     }
 
     public void roll()

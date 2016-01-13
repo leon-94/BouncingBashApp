@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Platform;
@@ -28,7 +29,7 @@ public class PlatformView {
     private Body platformBody;
     private SpriteBatch batch;
     private World world;
-    private ArrayList<Body> platformBodys = new ArrayList<Body>();
+    private HashMap<Sprite,Body> platformBodys = new HashMap<Sprite,Body>();
 
     public PlatformView(GameModel gameModel,World world,SpriteBatch batch)
     {
@@ -36,7 +37,8 @@ public class PlatformView {
         this.batch=batch;
         this.world=world;
         texturePlatform = new Texture(Gdx.files.internal("platform.png"));
-        setupMainPlatform();
+        setupPlatforms();
+        //setupMainPlatform();
     }
     /**texture, sprite und body der MainPlatform definiert**/
     public void setupMainPlatform()
@@ -60,7 +62,7 @@ public class PlatformView {
 
         FixtureDef fixtureDef2 = new FixtureDef();
         fixtureDef2.shape = shape;
-        fixtureDef2.density = 1f;
+        fixtureDef2.density = 500f;
 
         Fixture fixture2 = platformBody.createFixture(fixtureDef2);
 
@@ -82,32 +84,34 @@ public class PlatformView {
         for(Platform p : gameModel.getMap().getPlatformArrayList())
         {
 
-            spritePlatform = p.getSprite();
-            spritePlatform.setPosition(p.getHeight()+p.getY(), p.getX());
-            spritePlatform.setSize(p.getWidth(), p.getHeight());
+        spritePlatform = p.getSprite();
+        spritePlatform.setPosition(p.getX(), p.getY());
+        spritePlatform.setSize(p.getWidth(), p.getHeight());
 
-            BodyDef bodyDef = new BodyDef();
-            bodyDef.type = BodyDef.BodyType.StaticBody;
-            bodyDef.position.set((
-                            spritePlatform.getX() + spritePlatform.getWidth() + gameModel.getMap().getMainPlatform().getHeight()) / 2 / PIXELS_TO_METERS,
-                    spritePlatform.getY() / PIXELS_TO_METERS);
-            Body b = world.createBody(bodyDef);
-            platformBodys.add(b);
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.position.set(
+        (spritePlatform.getX() + spritePlatform.getWidth() /2 )/ PIXELS_TO_METERS,
+        (spritePlatform.getY() + spritePlatform.getHeight() /2 )/ PIXELS_TO_METERS);
+        Body b = world.createBody(bodyDef);
+        platformBodys.put(spritePlatform,b);
 
-            PolygonShape shape = new PolygonShape();
-            shape.setAsBox(
-                    ((spritePlatform.getWidth()/ PIXELS_TO_METERS) / 2 ),
-                    (spritePlatform.getHeight() / PIXELS_TO_METERS)  );
-
-            FixtureDef fixtureDef = new FixtureDef();
-            fixtureDef.shape = shape;
-            fixtureDef.density = 1f;
-
-            Fixture fixture2 = b.createFixture(fixtureDef);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(
+        ((spritePlatform.getWidth()/ PIXELS_TO_METERS) /2 ),
+        (spritePlatform.getHeight() / PIXELS_TO_METERS)/2  );
 
 
-            shape.dispose();
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 1f;
+
+        Fixture fixture2 = b.createFixture(fixtureDef);
+
+
+        shape.dispose();
         }
+
     }
     public void drawPlatforms()
     {
@@ -117,13 +121,17 @@ public class PlatformView {
                     , p.getSprite().getY(),
                     p.getWidth(),
                     p.getHeight());
+            Body body = platformBodys.get(p.getSprite());
+            p.getSprite().setPosition((body.getPosition().x * PIXELS_TO_METERS) - p.getSprite().
+                            getWidth() / 2,
+                    (body.getPosition().y * PIXELS_TO_METERS) - p.getSprite().getHeight() / 2);
         }
 
     }
     public Body getPlatformBody() {
         return platformBody;
     }
-    public ArrayList<Body> getPlatformBodys() {
+    public HashMap<Sprite,Body> getPlatformBodys() {
         return platformBodys;
     }
 

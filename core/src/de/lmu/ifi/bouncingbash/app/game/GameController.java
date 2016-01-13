@@ -1,5 +1,6 @@
 package de.lmu.ifi.bouncingbash.app.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 
 import de.lmu.ifi.bouncingbash.app.game.models.Item;
@@ -42,10 +43,21 @@ public class GameController {
 
     private void levelOne()
     {
-        gameModel.getMap().getPlatformArrayList().add(new Platform(20,0,0));
-        gameModel.getMap().getPlatformArrayList().add(new Platform(40,0,20));
-        gameModel.getMap().getPlatformArrayList().add(new Platform(20,40,40));
-        gameModel.getMap().getPlatformArrayList().add(new Platform(40,20,40));
+        int screenWidth =Gdx.graphics.getWidth();
+        int screenHeight = Gdx.graphics.getHeight();
+        gameModel.getMap().getPlatformArrayList().add(new Platform(screenWidth/4,
+                screenWidth/2,
+                screenHeight/2));
+        gameModel.getMap().getPlatformArrayList().add(new Platform(screenWidth/4,
+                screenWidth/2,
+                0));
+        gameModel.getMap().getPlatformArrayList().add(new Platform(screenWidth/4,
+                0,
+                0));
+        gameModel.getMap().getPlatformArrayList().add(new Platform(screenWidth/4,
+                0,
+                screenHeight/2));
+        System.out.println("Height: "+screenHeight+" Width: "+screenWidth);
     }
 
 }

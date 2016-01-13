@@ -12,6 +12,7 @@ public class Ball {
     private Item item=null;
     private float jumpSpeed=20;
 
+
     public float getJumpSpeed() {
         return jumpSpeed;
     }

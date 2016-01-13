@@ -38,6 +38,7 @@ public class Game extends ApplicationAdapter  {
 
 	private World world;
 
+
 	final float PIXELS_TO_METERS = 100f;
 	Box2DDebugRenderer debugRenderer;
 	private PlatformView platformView;
@@ -49,7 +50,7 @@ public class Game extends ApplicationAdapter  {
 	public Game(IActivity act, IBluetoothService bts, boolean host) {
 		super();
 		btService = bts;
-		btService.setQueueing(true);
+		//btService.setQueueing(true);
 		isHost = host;
 
 		activity = act;
@@ -97,7 +98,7 @@ public class Game extends ApplicationAdapter  {
 		GameController gameController = new GameController();
 		gameModel = gameController.getGameModel();
 
-		world = new World(new Vector2(0, -100f),true);
+		world = new World(new Vector2(0, -980f/PIXELS_TO_METERS),true);
 
 		batch = new SpriteBatch();
 		ballView = new BallView(gameModel,world, batch);
@@ -170,7 +171,8 @@ public class Game extends ApplicationAdapter  {
 		backgroundView.drawBackground();
 		batch.enableBlending();
 		ballView.drawBall();
-		platformView.drawMainPlatform();
+		//platformView.drawMainPlatform();
+		platformView.drawPlatforms();
 		ballView.roll();
 
 		batch.end();

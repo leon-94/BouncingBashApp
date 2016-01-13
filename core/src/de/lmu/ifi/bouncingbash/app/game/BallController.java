@@ -13,6 +13,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
     public class BallController implements InputProcessor {
         private GameModel gameModel;
         private Body body;
+    final float PIXELS_TO_METERS = 100f;
         public BallController(GameModel gameModel,Body body)
         {
             this.gameModel=gameModel;
@@ -36,8 +37,8 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             Gdx.app.log("Controller", "pressed Jump");
-            body.setLinearVelocity(body.getLinearVelocity().x, 100f);
-
+            //body.setLinearVelocity(body.getLinearVelocity().x, 2000f/PIXELS_TO_METERS);
+            body.applyForceToCenter(0,450f,true);
 
             return false;
         }
