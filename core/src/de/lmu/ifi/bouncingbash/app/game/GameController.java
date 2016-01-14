@@ -15,10 +15,12 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 public class GameController {
 
     private GameModel gameModel;
+    private GameController gameController;
 
     public GameController()
     {
         gameModel = new GameModel();
+        gameController = new GameController();
         levelOne();
     }
     /**Anzahl der Platformen außer MainPlatform zufällig generieren nur ne Idee kann auch fest gemacht werden**/
@@ -30,13 +32,7 @@ public class GameController {
             gameModel.getMap().getPlatformArrayList().add(new Platform());
         }
     }
-    /**TODO Items müssen noch gesendet werden**/
-    public void spawnItems()
-    {
-        if(gameModel.getPlayer1().isHost()) {
-            gameModel.getMap().getItemArrayList().add(new Item());
-        }
-    }
+
     public GameModel getGameModel() {
         return gameModel;
     }

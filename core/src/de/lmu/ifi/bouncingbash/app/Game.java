@@ -21,7 +21,9 @@ import de.lmu.ifi.bouncingbash.app.game.GameController;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.views.BackgroundView;
 import de.lmu.ifi.bouncingbash.app.game.views.BallView;
+import de.lmu.ifi.bouncingbash.app.game.views.ItemView;
 import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
+import de.lmu.ifi.bouncingbash.app.game.views.View;
 
 
 /***Spiel das gezeichnet wird**/
@@ -41,9 +43,7 @@ public class Game extends ApplicationAdapter  {
 
 	final float PIXELS_TO_METERS = 100f;
 	Box2DDebugRenderer debugRenderer;
-	private PlatformView platformView;
-	private BallView ballView;
-	private BackgroundView backgroundView;
+	private View platformView,ballView,backgroundView,itemView;
 
 
 
@@ -104,6 +104,7 @@ public class Game extends ApplicationAdapter  {
 		ballView = new BallView(gameModel,world, batch);
 		backgroundView = new BackgroundView(gameModel, batch);
 		platformView = new PlatformView(gameModel,world, batch);
+		itemView = new ItemView(gameModel,world,batch);
 
 		BodyDef bodyDef3 = new BodyDef();
 		bodyDef3.type = BodyDef.BodyType.StaticBody;
@@ -168,12 +169,12 @@ public class Game extends ApplicationAdapter  {
 
 		Matrix4 debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS,
 				PIXELS_TO_METERS, 0);
-		backgroundView.drawBackground();
+		backgroundView.draw();
 		batch.enableBlending();
-		ballView.drawBall();
+		ballView.draw();
 		//platformView.drawMainPlatform();
-		platformView.drawPlatforms();
-		ballView.roll();
+		platformView.draw();
+		itemView.draw();
 
 		batch.end();
 

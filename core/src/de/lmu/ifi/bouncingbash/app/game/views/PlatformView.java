@@ -21,7 +21,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.Platform;
 /**
  * Created by Michi on 30.12.2015.
  */
-public class PlatformView {
+public class PlatformView implements View{
     public GameModel gameModel;
     private Texture texturePlatform;
     private Sprite spritePlatform;
@@ -37,7 +37,7 @@ public class PlatformView {
         this.batch=batch;
         this.world=world;
         texturePlatform = new Texture(Gdx.files.internal("platform.png"));
-        setupPlatforms();
+        setup();
         //setupMainPlatform();
     }
     /**texture, sprite und body der MainPlatform definiert**/
@@ -79,7 +79,7 @@ public class PlatformView {
                 gameModel.getMap().getMainPlatform().getHeight());
 
     }
-    public void setupPlatforms()
+    public void setup()
     {
         for(Platform p : gameModel.getMap().getPlatformArrayList())
         {
@@ -113,7 +113,7 @@ public class PlatformView {
         }
 
     }
-    public void drawPlatforms()
+    public void draw()
     {
         for(Platform p : gameModel.getMap().getPlatformArrayList()) {
             batch.draw(p.getSprite(),

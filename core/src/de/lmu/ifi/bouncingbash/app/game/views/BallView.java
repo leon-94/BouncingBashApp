@@ -21,7 +21,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 /**
  * Created by Michi on 30.12.2015.
  */
-public class BallView {
+public class BallView implements View {
     public GameModel gameModel;
     private Texture textureBall;
     private Sprite spriteBall;
@@ -35,10 +35,10 @@ public class BallView {
         this.gameModel= gameModel;
         this.batch=batch;
         this.world=world;
-        setupBall();
+        setup();
 
     }
-    public void setupBall()
+    public void setup()
     {
         textureBall = new Texture(Gdx.files.internal(gameModel.getPlayer1().getBall().getTexture()));
 
@@ -72,7 +72,7 @@ public class BallView {
 
     }
 
-    public void drawBall()
+    public void draw()
     {
 
         spriteBall.setPosition(
@@ -84,10 +84,10 @@ public class BallView {
         batch.draw(spriteBall, spriteBall.getX(), spriteBall.getY());
         //batch.draw(spriteBall, spriteBall.getPosition().x, spriteBall.getPosition().y, width/2, height/2, width, height, /*scaleX*/1, /*scaleY*/1, /*rotation*/
          //       body.getAngle() * MathUtils.radToDegree, srcX, srcY, srcWidth, srcHeight, /*flipX*/false, /*flipY*/false);
-
+        roll();
 
     }
-
+    //Steuerungsmethode für ball
     public void roll()
     {
         float adjustedY = Gdx.input.getAccelerometerY();

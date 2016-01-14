@@ -10,7 +10,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 /**
  * Created by Michi on 30.12.2015.
  */
-public class BackgroundView {
+public class BackgroundView implements View{
     public GameModel gameModel;
     private Texture textureBackground;
     private Sprite spriteBackground;
@@ -19,11 +19,15 @@ public class BackgroundView {
     {
         this.gameModel= gameModel;
         this.batch=batch;
+        setup();
+    }
+    public void setup()
+    {
         textureBackground = new Texture(Gdx.files.internal("background.png"));
         spriteBackground = new Sprite(textureBackground);
 
     }
-    public void drawBackground()
+    public void draw()
     {
         batch.draw(spriteBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }

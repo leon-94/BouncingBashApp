@@ -11,7 +11,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 /**
  * Created by Michi on 30.12.2015.
  */
-public class DebugView {
+public class DebugView implements View {
     public GameModel gameModel;
     private Texture textureBackground;
     private Sprite spriteBackground;
@@ -21,11 +21,15 @@ public class DebugView {
     {
         this.gameModel= gameModel;
         this.batch=batch;
+        setup();
+    }
+    public void setup()
+    {
         textureBackground = new Texture(Gdx.files.internal(gameModel.getMap().getBackGround()));
         spriteBackground = new Sprite(textureBackground);
 
     }
-    public void drawBackground()
+    public void draw()
     {
         Matrix4 debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS,
                 PIXELS_TO_METERS, 0);    }
