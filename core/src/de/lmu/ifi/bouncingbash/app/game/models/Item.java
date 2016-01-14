@@ -10,8 +10,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
  */
 public class Item {
     private EffectType type = EffectType.SPEEDUP;
-    private Sprite sprite = new Sprite(new Texture(Gdx.files.internal(type.getName())));
-
+    private Sprite sprite;
+    private int x=0,y=0;
     public Sprite getSprite() {
         return sprite;
     }
@@ -25,6 +25,22 @@ public class Item {
 
     public void setType(EffectType type) {
         this.type = type;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 
 }

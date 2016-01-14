@@ -15,12 +15,10 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 public class GameController {
 
     private GameModel gameModel;
-    private GameController gameController;
 
     public GameController()
     {
         gameModel = new GameModel();
-        gameController = new GameController();
         levelOne();
     }
     /**Anzahl der Platformen außer MainPlatform zufällig generieren nur ne Idee kann auch fest gemacht werden**/

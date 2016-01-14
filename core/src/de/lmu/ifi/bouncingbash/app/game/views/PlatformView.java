@@ -84,6 +84,8 @@ public class PlatformView implements View{
         for(Platform p : gameModel.getMap().getPlatformArrayList())
         {
 
+         Sprite s = new Sprite(new Texture(Gdx.files.internal(p.getTexture())));
+         p.setSprite(s);
         spritePlatform = p.getSprite();
         spritePlatform.setPosition(p.getX(), p.getY());
         spritePlatform.setSize(p.getWidth(), p.getHeight());

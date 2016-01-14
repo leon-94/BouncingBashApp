@@ -12,7 +12,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 public class Platform {
 
     private String texture = "platform.png";
-    private Sprite sprite = new Sprite(new Texture(Gdx.files.internal("platform.png")));
+    private Sprite sprite;
     private int height= 30,width =  Gdx.graphics.getWidth()-60 ;
     private int x=0,y=0;
 

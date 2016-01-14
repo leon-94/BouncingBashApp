@@ -5,14 +5,14 @@ package de.lmu.ifi.bouncingbash.app.game.models;
  */
 public class GameModel {
 
-    private de.lmu.ifi.bouncingbash.app.game.models.Map map;
+    private Map map;
     /**Player who sends the game Request**/
     private Player player1;
     private Player player2;
 
     public GameModel()
     {
-        map = new de.lmu.ifi.bouncingbash.app.game.models.Map();
+        map = new Map();
         player1 = new Player();
         player2 = new Player();
         player1.setHost(true);
@@ -34,11 +34,11 @@ public class GameModel {
         this.player2 = player2;
     }
 
-    public de.lmu.ifi.bouncingbash.app.game.models.Map getMap() {
+    public Map getMap() {
         return map;
     }
 
-    public void setMap(de.lmu.ifi.bouncingbash.app.game.models.Map map) {
+    public void setMap(Map map) {
         this.map = map;
     }
 

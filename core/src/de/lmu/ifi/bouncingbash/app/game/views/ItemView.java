@@ -36,6 +36,7 @@ public class ItemView implements View{
         this.batch=batch;
         this.world=world;
         setup();
+        itemSpawnController = new ItemSpawnController(gameModel);
 
     }
 
@@ -43,7 +44,8 @@ public class ItemView implements View{
     {
         for(Item i : gameModel.getMap().getItemArrayList())
         {
-
+            Sprite s = new Sprite(new Texture(Gdx.files.internal(i.getType().getName())));
+            i.setSprite(s);
             spriteItem = i.getSprite();
             spriteItem.setPosition(
                     gameModel.getMap().getPlatformArrayList().get(0).getX(),
@@ -73,14 +75,14 @@ public class ItemView implements View{
 
             shape.dispose();
 
-            itemSpawnController = new ItemSpawnController(gameModel);
         }
-
     }
     public void draw()
     {
         itemSpawnController.spawnItems();
         for(Item i : gameModel.getMap().getItemArrayList()) {
+            //TODO setup muss noch geändert werden
+            setup();
             batch.draw(i.getSprite(),
                     i.getSprite().getX()
                     , i.getSprite().getY()

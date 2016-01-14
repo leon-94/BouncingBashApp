@@ -80,7 +80,7 @@ public class BallView implements View {
                 (ballBody.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
         spriteBall.setRotation((float) Math.toDegrees(ballBody.getAngle()));
 
-        System.out.println("Ballbody rotation: " +(float)Math.toDegrees(ballBody.getAngle()) );
+        //System.out.println("Ballbody rotation: " +(float)Math.toDegrees(ballBody.getAngle()) );
         batch.draw(spriteBall, spriteBall.getX(), spriteBall.getY());
         //batch.draw(spriteBall, spriteBall.getPosition().x, spriteBall.getPosition().y, width/2, height/2, width, height, /*scaleX*/1, /*scaleY*/1, /*rotation*/
          //       body.getAngle() * MathUtils.radToDegree, srcX, srcY, srcWidth, srcHeight, /*flipX*/false, /*flipY*/false);

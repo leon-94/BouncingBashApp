@@ -50,10 +50,15 @@ public class Game extends ApplicationAdapter  {
 	public Game(IActivity act, IBluetoothService bts, boolean host) {
 		super();
 		btService = bts;
-		//btService.setQueueing(true);
+		btService.setQueueing(true);
 		isHost = host;
 
 		activity = act;
+	}
+	/**nur für mich zum testen :D **/
+	public Game()
+	{
+		super();
 	}
 
 	private void exitGame(boolean won) {

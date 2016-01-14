@@ -6,6 +6,7 @@ import java.util.TimerTask;
 
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Item;
+import de.lmu.ifi.bouncingbash.app.game.models.Platform;
 
 /**
  * Created by Michi on 14.01.2016.
@@ -21,18 +22,31 @@ public class ItemSpawnController {
     /**Methode fürs itemSpawnen:
      * Startet einen Timertask mit einer zufälligen Zeit zwischen 5 und 10s
      * Nach dem die Zeit vergangen ist wird der ItemArraylist ein Item hinzugefügt TODO items werden ausgewürfelt
-     *
+     *Items werden auf Platformen gesetzt
      * **/
     public void spawnItems()
     {
         if(spawn) {
             spawn = false;
             int random = randInt(5,10);
+            System.out.println("Random "+random);
             TimerTask timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     //if (gameModel.getPlayer1().isHost()) {
-                        gameModel.getMap().getItemArrayList().add(new Item());
+                    //zufällige Platform zum spawnen aussuchen
+                   /** int platforms=0;
+                    for(Platform p: gameModel.getMap().getPlatformArrayList())
+                    {
+                        platforms++;
+                    }
+                    int randomPlatformNumber = randInt(0,platforms);**/
+                    Platform randomPlatform = gameModel.getMap().getPlatformArrayList().get(0);
+                    Item item = new Item();
+                    item.setX(randomPlatform.getX());
+                    item.setY(randomPlatform.getY());
+                    System.out.println("spawn Item");
+                        gameModel.getMap().getItemArrayList().add(item);
                         spawn = true;
                    // }
                 }

@@ -27,7 +27,7 @@ public class AndroidLauncher extends AndroidApplication implements IActivity{
 		cfg.useAccelerometer = true;
 		cfg.useCompass = true;
 
-		initialize(new Game(this, BluetoothService.getBluetoothService(), Data.isHost), cfg);
+		initialize(new Game(/**this, BluetoothService.getBluetoothService(), Data.isHost**/), cfg);
 
 	}
 
