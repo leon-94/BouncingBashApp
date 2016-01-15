@@ -10,7 +10,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 /**
  * Created by Michi on 30.12.2015.
  */
-public class BackgroundView implements View{
+public class BackgroundView {
     public GameModel gameModel;
     private Texture textureBackground;
     private Sprite spriteBackground;

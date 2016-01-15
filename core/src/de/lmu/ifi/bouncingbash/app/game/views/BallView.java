@@ -15,18 +15,21 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 
+import java.util.HashMap;
+
 import de.lmu.ifi.bouncingbash.app.game.BallController;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
+import de.lmu.ifi.bouncingbash.app.game.models.Map;
 
 /**
  * Created by Michi on 30.12.2015.
  */
-public class BallView implements View {
+public class BallView implements BodyView {
     public GameModel gameModel;
     private Texture textureBall;
     private Sprite spriteBall;
     final float PIXELS_TO_METERS = 100f;
-
+    private  HashMap<Sprite, Body> ballBodys = new HashMap<Sprite, Body>();
     private Body ballBody;
     private SpriteBatch batch;
     private World world;
@@ -70,14 +73,16 @@ public class BallView implements View {
         BallController ballController = new BallController(gameModel, ballBody);
         Gdx.input.setInputProcessor(ballController);
 
+        getBodys().put(spriteBall, ballBody);
     }
 
     public void draw()
     {
 
-        spriteBall.setPosition(
-                (ballBody.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
-                (ballBody.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
+            spriteBall.setPosition(
+                    (ballBody.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
+                    (ballBody.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
+
         spriteBall.setRotation((float) Math.toDegrees(ballBody.getAngle()));
 
         //System.out.println("Ballbody rotation: " +(float)Math.toDegrees(ballBody.getAngle()) );
@@ -95,7 +100,9 @@ public class BallView implements View {
 
 
     }
-    public Body getBallBody() {
-        return ballBody;
+
+    @Override
+    public HashMap<Sprite, Body> getBodys() {
+        return ballBodys;
     }
 }

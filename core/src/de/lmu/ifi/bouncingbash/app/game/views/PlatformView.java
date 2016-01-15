@@ -21,64 +21,23 @@ import de.lmu.ifi.bouncingbash.app.game.models.Platform;
 /**
  * Created by Michi on 30.12.2015.
  */
-public class PlatformView implements View{
+public class PlatformView implements BodyView{
     public GameModel gameModel;
-    private Texture texturePlatform;
     private Sprite spritePlatform;
     final float PIXELS_TO_METERS = 100f;
     private Body platformBody;
     private SpriteBatch batch;
     private World world;
-    private HashMap<Sprite,Body> platformBodys = new HashMap<Sprite,Body>();
+    private  HashMap<Sprite, Body> platformBodys = new HashMap<Sprite, Body>();
 
     public PlatformView(GameModel gameModel,World world,SpriteBatch batch)
     {
         this.gameModel= gameModel;
         this.batch=batch;
         this.world=world;
-        texturePlatform = new Texture(Gdx.files.internal("platform.png"));
         setup();
-        //setupMainPlatform();
-    }
-    /**texture, sprite und body der MainPlatform definiert**/
-    public void setupMainPlatform()
-    {
-        spritePlatform = new Sprite(texturePlatform);
-        spritePlatform.setPosition(gameModel.getMap().getMainPlatform().getHeight(), 0);
-        spritePlatform.setSize(gameModel.getMap().getMainPlatform().getWidth(),
-                gameModel.getMap().getMainPlatform().getHeight());
-
-        BodyDef bodyDef2 = new BodyDef();
-        bodyDef2.type = BodyDef.BodyType.StaticBody;
-        bodyDef2.position.set((
-                        spritePlatform.getX() + spritePlatform.getWidth() + gameModel.getMap().getMainPlatform().getHeight()) / 2 / PIXELS_TO_METERS,
-                spritePlatform.getY() / PIXELS_TO_METERS);
-        platformBody = world.createBody(bodyDef2);
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(
-                ((spritePlatform.getWidth()/ PIXELS_TO_METERS) / 2 ),
-                (spritePlatform.getHeight() / PIXELS_TO_METERS)  );
-
-        FixtureDef fixtureDef2 = new FixtureDef();
-        fixtureDef2.shape = shape;
-        fixtureDef2.density = 500f;
-
-        Fixture fixture2 = platformBody.createFixture(fixtureDef2);
-
-
-        shape.dispose();
     }
 
-    public void drawMainPlatform()
-    {
-        batch.draw(spritePlatform,
-                spritePlatform.getX()
-                , spritePlatform.getY(),
-                gameModel.getMap().getMainPlatform().getWidth(),
-                gameModel.getMap().getMainPlatform().getHeight());
-
-    }
     public void setup()
     {
         for(Platform p : gameModel.getMap().getPlatformArrayList())
@@ -96,7 +55,7 @@ public class PlatformView implements View{
         (spritePlatform.getX() + spritePlatform.getWidth() /2 )/ PIXELS_TO_METERS,
         (spritePlatform.getY() + spritePlatform.getHeight() /2 )/ PIXELS_TO_METERS);
         Body b = world.createBody(bodyDef);
-        platformBodys.put(spritePlatform,b);
+        getBodys().put(spritePlatform, b);
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(
@@ -123,18 +82,17 @@ public class PlatformView implements View{
                     , p.getSprite().getY(),
                     p.getWidth(),
                     p.getHeight());
-            Body body = platformBodys.get(p.getSprite());
+            Body body = getBodys().get(p.getSprite());
             p.getSprite().setPosition((body.getPosition().x * PIXELS_TO_METERS) - p.getSprite().
                             getWidth() / 2,
                     (body.getPosition().y * PIXELS_TO_METERS) - p.getSprite().getHeight() / 2);
         }
 
     }
-    public Body getPlatformBody() {
-        return platformBody;
-    }
-    public HashMap<Sprite,Body> getPlatformBodys() {
+
+
+    @Override
+    public HashMap<Sprite, Body> getBodys() {
         return platformBodys;
     }
-
 }

@@ -9,13 +9,19 @@ public class GameModel {
     /**Player who sends the game Request**/
     private Player player1;
     private Player player2;
+    private Ball[] balls;
 
     public GameModel()
     {
+        balls = new Ball[2];
         map = new Map();
+
         player1 = new Player();
         player2 = new Player();
         player1.setHost(true);
+
+        balls[0]=player1.getBall();
+        balls[1]=player2.getBall();
     }
 
     public Player getPlayer1() {
@@ -40,6 +46,10 @@ public class GameModel {
 
     public void setMap(Map map) {
         this.map = map;
+    }
+
+    public Ball[] getBalls() {
+        return balls;
     }
 
 }
