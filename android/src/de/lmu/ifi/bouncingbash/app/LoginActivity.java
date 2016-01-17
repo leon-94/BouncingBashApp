@@ -93,9 +93,8 @@ public class LoginActivity extends ActionBarActivity {
     }
 
     public void startGame(View view) {
-        GameData.gameStartTime = System.currentTimeMillis();
-        GameData.debug_sp = true;
 
+        GameData.debug_sp = true;
         Intent i = new Intent(this, AndroidLauncher.class);
         startActivity(i);
     }

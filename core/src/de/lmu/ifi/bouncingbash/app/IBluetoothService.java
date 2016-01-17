@@ -3,10 +3,6 @@ package de.lmu.ifi.bouncingbash.app;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 
-import java.util.ArrayList;
-
-import de.lmu.ifi.bouncingbash.app.game.Transmittable;
-
 /**
  * Created by Leon on 31.12.2015.
  */

@@ -16,14 +16,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.UUID;
 
 import de.lmu.ifi.bouncingbash.app.IBluetoothService;
-import de.lmu.ifi.bouncingbash.app.game.Transmittable;
-import de.lmu.ifi.bouncingbash.app.game.views.BallView;
 
 public class BluetoothService implements IBluetoothService {
 
@@ -471,50 +466,4 @@ public class BluetoothService implements IBluetoothService {
         }
         return jsonArray;
     }
-
-
-    /*
-    public void transmit(ArrayList<Transmittable> ts) {
-
-        JsonObject message = new JsonObject();
-        JsonArray elements = new JsonArray();
-
-        for(Transmittable t : ts) {
-            elements.add(toJsonObj(t));
-        }
-
-        message.add("elements", elements);
-        write(message.toString());
-    }
-
-    public ArrayList<Transmittable> receive() {
-        ArrayList<Transmittable> ts = new ArrayList<>();
-        String[] messages = read();
-        if(messages == null || messages.length == 0) return null;
-
-        String lastestMsg = messages[messages.length-1];
-        JsonObject message = (JsonObject) Json.parse(lastestMsg);
-        JsonArray elements = (JsonArray) message.get("elements");
-        Iterator it = elements.iterator();
-        while(it.hasNext()) {
-            JsonObject obj = (JsonObject) it.next();
-            ts.add(toTransmittable(obj));
-        }
-
-        return ts;
-    }
-
-    private JsonObject toJsonObj(Transmittable t) {
-        JsonObject obj = new JsonObject();
-
-        HashMap<String, String> map = t.getDataMap();
-        Collection values = map.values();
-        Iterator<String> it = values.iterator();
-        while(it.hasNext()) {
-            String s = it.next();
-            obj.add(s, map.get(s));
-        }
-
-        return obj;
-    }*/
 }

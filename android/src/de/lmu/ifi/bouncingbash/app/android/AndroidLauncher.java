@@ -3,16 +3,13 @@ package de.lmu.ifi.bouncingbash.app.android;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 
 import de.lmu.ifi.bouncingbash.app.Data;
-import de.lmu.ifi.bouncingbash.app.Game;
+import de.lmu.ifi.bouncingbash.app.game.Game;
 import de.lmu.ifi.bouncingbash.app.IActivity;
 import de.lmu.ifi.bouncingbash.app.MapActivity;
-import de.lmu.ifi.bouncingbash.app.MotionDemo;
 import de.lmu.ifi.bouncingbash.app.connectivity.BluetoothService;
 import de.lmu.ifi.bouncingbash.app.game.GameData;
 
