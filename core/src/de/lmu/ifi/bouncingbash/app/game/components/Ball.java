@@ -45,29 +45,34 @@ public class Ball extends PhysicsObject {
 
         this.controllable = controllable;
 
-        Color color;
-        if(controllable){
-            color = Color.CYAN;
-            alphaValue = 1;
-        }
-        else {
-            color = Color.GREEN;
-            alphaValue = 1f;
-        }
+//        Color color;
+//        if(controllable){
+//            color = Color.CYAN;
+//            alphaValue = 1;
+//        }
+//        else {
+//            color = Color.GREEN;
+//            alphaValue = 1f;
+//        }
+//
+//        Pixmap p = new Pixmap((int)Constants.BALL_RADIUS*2, (int)Constants.BALL_RADIUS*2, Pixmap.Format.RGBA8888);
+//        p.setColor(color);
+//        p.fillCircle(p.getWidth() / 2, p.getHeight() / 2, Constants.BALL_RADIUS);
+//        p.setColor(Color.CYAN.BLACK);
+//        p.drawCircle(p.getWidth() / 2, p.getHeight() / 2, Constants.BALL_RADIUS);
+//        p.drawCircle(p.getWidth() / 2, p.getHeight() / 2, Constants.BALL_RADIUS-1);
+//        p.drawLine(Constants.BALL_RADIUS, Constants.BALL_RADIUS * 2, Constants.BALL_RADIUS, 0);
+//        texture = new Texture(p);
+//        p.dispose();
 
-        Pixmap p = new Pixmap((int)Constants.BALL_RADIUS*2, (int)Constants.BALL_RADIUS*2, Pixmap.Format.RGBA8888);
-        p.setColor(color);
-        p.fillCircle(p.getWidth() / 2, p.getHeight() / 2, Constants.BALL_RADIUS);
-        p.setColor(Color.CYAN.BLACK);
-        p.drawCircle(p.getWidth() / 2, p.getHeight() / 2, Constants.BALL_RADIUS);
-        p.drawCircle(p.getWidth() / 2, p.getHeight() / 2, Constants.BALL_RADIUS-1);
-        p.drawLine(Constants.BALL_RADIUS, Constants.BALL_RADIUS * 2, Constants.BALL_RADIUS, 0);
-        texture = new Texture(p);
-        p.dispose();
+        color = controllable ? Color.CYAN : Color.GREEN;
+        texture = Textures.getTextures().getTexture("TEX_BALL");
 
         sprite = new Sprite(texture);
         sprite.setSize(Constants.BALL_RADIUS * 2, Constants.BALL_RADIUS * 2);
         sprite.setPosition(x, y);
+        sprite.setOriginCenter();
+        sprite.setColor(color);
 
         // setup trnasmitted position fileds
         m_timestamp = 0;

@@ -25,30 +25,48 @@ import de.lmu.ifi.bouncingbash.app.IActivity;
 import de.lmu.ifi.bouncingbash.app.IBluetoothService;
 import de.lmu.ifi.bouncingbash.app.game.animation.AnimationHandler;
 import de.lmu.ifi.bouncingbash.app.game.components.Ball;
-import de.lmu.ifi.bouncingbash.app.game.components.Button;
+import de.lmu.ifi.bouncingbash.app.game.components.ui.Button;
 import de.lmu.ifi.bouncingbash.app.game.components.GameComponent;
-import de.lmu.ifi.bouncingbash.app.game.components.JumpBar;
+import de.lmu.ifi.bouncingbash.app.game.components.ui.JumpBar;
 import de.lmu.ifi.bouncingbash.app.game.components.PhysicsObject;
 import de.lmu.ifi.bouncingbash.app.game.components.Switch;
-import de.lmu.ifi.bouncingbash.app.game.components.UIComponent;
+import de.lmu.ifi.bouncingbash.app.game.components.ui.UIComponent;
 import de.lmu.ifi.bouncingbash.app.game.components.Wall;
 
 
 /***Spiel das gezeichnet wird**/
 public class Game extends ApplicationAdapter {
 
+    public Texture TEX_BALL;
     public Texture TEX_CIRCLE;
+    public Texture TEX_CIRCLE2;
+    public Texture TEX_DIAMONT;
     public Texture TEX_ARROW;
     public Texture TEX_SWITCH;
     public Texture TEX_DUST;
 
+    public BitmapFont FONT_CALIBRI_32;
+    public BitmapFont FONT_CALIBRI_64;
+
 //    public TextureAtlas ATLAS_DUST;
 
     private void load() {
+
+        // textures
+        TEX_BALL = new Texture("ball.png");
         TEX_CIRCLE = new Texture("circle.png");
+        TEX_CIRCLE2 = new Texture("circle2.png");
         TEX_ARROW = new Texture("arrow.png");
         TEX_SWITCH = new Texture("switch.png");
         TEX_DUST = new Texture("dust.png");
+        TEX_DIAMONT = new Texture("diamont.png");
+
+        // fonts
+        FONT_CALIBRI_32 = new BitmapFont(Gdx.files.internal("fonts/calibri_32.fnt"));
+        FONT_CALIBRI_32.setColor(Color.WHITE);
+        FONT_CALIBRI_64 = new BitmapFont(Gdx.files.internal("fonts/calibri_64.fnt"));
+        FONT_CALIBRI_64.setColor(Color.WHITE);
+        FONT_CALIBRI_64.getData().setScale(2f);
 
 //        ATLAS_DUST = new TextureAtlas("dust/dust.pack");
 
@@ -79,7 +97,7 @@ public class Game extends ApplicationAdapter {
     private BitmapFont font2;
 	private World world;
 
-    private AnimationHandler animationHandler;
+    public AnimationHandler animationHandler;
 
     // all components
     public ArrayList<GameComponent> gameComponents;
@@ -161,7 +179,7 @@ public class Game extends ApplicationAdapter {
                     Gdx.app.log(TAG, "collision");
 
                     Vector2 normal = a.getPosition().sub(b.getPosition()).rotate90(1);
-                    int rotation = (int)normal.angle();
+                    int rotation = (int) normal.angle();
 
                     animationHandler.contactAnim(contactpoint.scl(Constants.PIXELS_TO_METERS), rotation);
                 }
@@ -233,8 +251,8 @@ public class Game extends ApplicationAdapter {
     private void initGame() {
 
         // create balls
-        ball1 = new Ball(this, world, 50, 50, GameData.isHost);
-        ball2 = new Ball(this, world, 100, 300, !GameData.isHost);
+        ball1 = new Ball(this, world, Constants.WIDTH/2 - Constants.BALL_RADIUS, 50, GameData.isHost);
+        ball2 = new Ball(this, world, Constants.WIDTH/2 - Constants.BALL_RADIUS, 350, !GameData.isHost);
 
         // indentify own ball
         if(GameData.isHost) {
@@ -255,6 +273,7 @@ public class Game extends ApplicationAdapter {
 
     private void loadMap() {
 
+        // walls
         Wall wall1 = new Wall(this, world, 0, 0, (int)Constants.WIDTH, 20);
         add(wall1);
         Wall wall2 = new Wall(this, world, 0, 300, (int)Constants.WIDTH/2, 20);
@@ -267,7 +286,11 @@ public class Game extends ApplicationAdapter {
         add(wall5);
         Wall wall6 = new Wall(this, world, 0, (int)Constants.HEIGHT-20, (int)Constants.WIDTH - 500, 20);
         add(wall6);
+
+        // switches
         add(new Switch(this, world, (int)Constants.WIDTH - 150, 20));
+//        add(new Switch(this, world, (int)Constants.WIDTH/2, 120));
+        add(new Switch(this, world, 20, (int)Constants.HEIGHT - 150));
     }
 
     public void startGame() {
@@ -285,7 +308,7 @@ public class Game extends ApplicationAdapter {
                 for (UIComponent u : uiComponents) u.update(Constants.SIM_FREQUENCY);
                 if(getState() == State.RUNNING) {
                     for (PhysicsObject p : physicsObjects) p.update(Constants.SIM_FREQUENCY);
-                    animationHandler.upadte(Constants.SIM_FREQUENCY);
+                    animationHandler.update(Constants.SIM_FREQUENCY);
                     world.step(Constants.SIM_FREQUENCY, 6, 2);
                 }
             }

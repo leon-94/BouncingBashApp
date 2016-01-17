@@ -1,4 +1,4 @@
-package de.lmu.ifi.bouncingbash.app.game.components;
+package de.lmu.ifi.bouncingbash.app.game.components.ui;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import de.lmu.ifi.bouncingbash.app.game.Textures;
+
 /**
  * Created by Leon on 12.01.2016.
  */
@@ -14,20 +16,19 @@ public class Button extends UIComponent {
 
     private final String TAG = "Button";
 
-    private final int borderThickness = 5;
+    private final int borderThickness = 0;
     private BitmapFont font;
     private String text;
 
     public Button(String text, float x, float y, int w, int h) {
 
         this.text = text;
+        this.alphaValue = .5f;
 
-        font = new BitmapFont();
-        font.setColor(Color.WHITE);
-        font.getData().setScale(2, 2);
+        font = Textures.getTextures().getFont("FONT_CALIBRI_64");
 
         Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        p.setColor(Color.GRAY);
+        p.setColor(Color.DARK_GRAY);
         p.fill();
         p.setColor(Color.BLACK);
         p.fillRectangle(0, 0, w, borderThickness);

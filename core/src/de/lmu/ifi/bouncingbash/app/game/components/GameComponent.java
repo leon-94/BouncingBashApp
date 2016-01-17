@@ -2,6 +2,7 @@ package de.lmu.ifi.bouncingbash.app.game.components;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -17,6 +18,7 @@ public abstract class GameComponent {
     protected Texture texture;
     protected Sprite sprite;
     protected float alphaValue = 1;
+    Color color = Color.WHITE;
 
     protected boolean down = false;
 
@@ -25,6 +27,7 @@ public abstract class GameComponent {
     }
 
     public void render(SpriteBatch batch) {
+        sprite.setAlpha(alphaValue);
         sprite.draw(batch, alphaValue);
     }
 

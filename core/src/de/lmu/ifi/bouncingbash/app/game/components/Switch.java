@@ -35,7 +35,7 @@ public class Switch extends PhysicsObject {
         texture = Textures.getTextures().getTexture("TEX_SWITCH");
 
         sprite = new Sprite(texture);
-        sprite.setSize(Constants.BALL_RADIUS * 2, Constants.BALL_RADIUS * 2);
+        sprite.setSize(130, 130);
         sprite.setPosition(x, y);
 
         // Now create a BodyDefinition.  This defines the physics objects type and position in the simulation
@@ -49,8 +49,20 @@ public class Switch extends PhysicsObject {
         body = world.createBody(bodyDef);
 
 
+
+        Vector2[] vertices = new Vector2[4];
+//        vertices[0] = new Vector2(0, (sprite.getHeight()/2 ) / Constants.PIXELS_TO_METERS);
+//        vertices[1] = new Vector2((sprite.getWidth()/2 ) / Constants.PIXELS_TO_METERS, (sprite.getHeight() ) / Constants.PIXELS_TO_METERS);
+//        vertices[2] = new Vector2((sprite.getWidth() ) / Constants.PIXELS_TO_METERS, (sprite.getHeight()/2 ) / Constants.PIXELS_TO_METERS);
+//        vertices[3] = new Vector2((sprite.getWidth()/2 ) / Constants.PIXELS_TO_METERS, 0);
+
+        vertices[0] = new Vector2(-1*sprite.getWidth()/ 2 / Constants.PIXELS_TO_METERS, 0);
+        vertices[1] = new Vector2(0, sprite.getHeight()/ 2 / Constants.PIXELS_TO_METERS);
+        vertices[2] = new Vector2(sprite.getWidth()/ 2 / Constants.PIXELS_TO_METERS, 0);
+        vertices[3] = new Vector2(0, -1*sprite.getHeight()/ 2 / Constants.PIXELS_TO_METERS);
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(sprite.getWidth() / 2 / Constants.PIXELS_TO_METERS, sprite.getHeight() / 2 / Constants.PIXELS_TO_METERS);
+        shape.set(vertices);
+//        shape.setAsBox(sprite.getWidth() / 2 / Constants.PIXELS_TO_METERS, sprite.getHeight() / 2 / Constants.PIXELS_TO_METERS);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -70,6 +82,7 @@ public class Switch extends PhysicsObject {
                 b == game.myBall.getBody() || b == game.otherBall.getBody())
                 && Game.getGameTime()-lastToggle > Constants.GRAVITY_TOGGLE_COOLDOWN) {
             game.toggleGravity();
+            game.animationHandler.switchtAnim(new Vector2(sprite.getX() + sprite.getWidth()/2, sprite.getY() + sprite.getHeight()/2));
             lastToggle = Game.getGameTime();
         }
     }

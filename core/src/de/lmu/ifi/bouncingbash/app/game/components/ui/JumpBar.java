@@ -1,4 +1,4 @@
-package de.lmu.ifi.bouncingbash.app.game.components;
+package de.lmu.ifi.bouncingbash.app.game.components.ui;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
