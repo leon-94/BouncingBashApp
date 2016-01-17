@@ -1,6 +1,5 @@
 package de.lmu.ifi.bouncingbash.app.game;
 
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -9,10 +8,11 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import de.lmu.ifi.bouncingbash.app.game.models.EffectType;
+import de.lmu.ifi.bouncingbash.app.game.models.Ball;
 import de.lmu.ifi.bouncingbash.app.game.models.Entity;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Item;
@@ -80,16 +80,33 @@ public class CollisionHandler {
                 /**Ball item Collision**/
                 for(Map.Entry<Entity,Body> entry : itemView.getBodys().entrySet())
                 {
+                    Item itemModel  = (Item)entry.getKey();
                     Body itemBody = entry.getValue();
 
                     for(Map.Entry<Entity,Body> entry2: ballView.getBodys().entrySet()) {
+                        Ball ballModel  = (Ball)entry2.getKey();
                         Body ballBody = entry2.getValue();
                         if ((fA == itemBody && fB == ballBody) ||
                                 (fA == ballBody && fB == itemBody)) {
                             CustomUserData data = (CustomUserData) itemBody.getUserData();
                             data.setIsFlaggedForDelete(true);
-
-                            gameModel.getPlayer1().getBall().setSpeed(10);
+                            ballModel.setItem(itemModel);
+                            //welcher itemtyp ist es setze dementsprechend andere eigenschaften für den ball
+                            switch(ballModel.getItem().getType()) {
+                                case SPEEDUP:
+                                    ballModel.setSpeed(5);
+                                    //änderung wieder rückgängig machen nachdem itemzeit vorüber ist
+                                    TimerTask timerTask = new TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            gameModel.getPlayer1().getBall().setSpeed(1);
+                                        }
+                                    };
+                                    Timer timer = new Timer();
+                                    timer.schedule(timerTask, ballModel.getItem().getType().getLength() * 1000);
+                                default:
+                                    break;
+                            }
                             System.out.println("CONTACT ball body item body");
                             System.out.println("" + fA + " " + fB);
                         }

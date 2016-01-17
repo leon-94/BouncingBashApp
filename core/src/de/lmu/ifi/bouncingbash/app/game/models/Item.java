@@ -1,20 +1,17 @@
 package de.lmu.ifi.bouncingbash.app.game.models;
 
 
-
-import com.badlogic.gdx.graphics.g2d.Sprite;
-
 /**
  * Created by Michael on 11.12.2015.
  */
 public class Item extends Entity {
-    private EffectType type = EffectType.SPEEDUP;
+    private UpgradeType type = UpgradeType.SPEEDUP;
 
-    public EffectType getType() {
+    public UpgradeType getType() {
         return type;
     }
 
-    public void setType(EffectType type) {
+    public void setType(UpgradeType type) {
         this.type = type;
     }
 

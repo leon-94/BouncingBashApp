@@ -7,6 +7,6 @@ package de.lmu.ifi.bouncingbash.app.game.models;
 /**EffectFelder die die Eigenschaften des Balles verändern z.B.speed field
  * **/
 public class Field {
-    private EffectType effectType;
+    private UpgradeType upgradeType;
 
 }
