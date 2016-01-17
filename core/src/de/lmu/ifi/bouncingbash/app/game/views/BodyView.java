@@ -9,10 +9,12 @@ import com.badlogic.gdx.physics.box2d.Body;
 
 import java.util.HashMap;
 
+import de.lmu.ifi.bouncingbash.app.game.models.Entity;
+
 
 /**all Views were the bodys are relevant**/
 public interface BodyView {
-    HashMap<Sprite, Body> getBodys();
+    HashMap<Entity, Body> getBodys();
     void setup();
     void draw();
 }

@@ -112,7 +112,7 @@ public class Game extends ApplicationAdapter  {
 		bodyViews.add(platformView);
 		bodyViews.add(itemView);
 		/**initialisiere den CollisionHandler**/
-		CollisionHandler collisionHandler = new CollisionHandler(bodyViews,world);
+		CollisionHandler collisionHandler = new CollisionHandler(bodyViews,world,gameModel);
 		collisionHandler.collision();
 		debugRenderer = new Box2DDebugRenderer();
 	}
@@ -124,13 +124,13 @@ public class Game extends ApplicationAdapter  {
 		world.step(1f / 30f, 6, 2);
 
 
-		batch.disableBlending();
+		//batch.disableBlending();
 		batch.begin();
 
-		Matrix4 debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS,
-				PIXELS_TO_METERS, 0);
-		backgroundView.draw();
-		batch.enableBlending();
+		//Matrix4 debugMatrix = batch.getProjectionMatrix().cpy().scale(PIXELS_TO_METERS,
+			//	PIXELS_TO_METERS, 0);
+		//backgroundView.draw();
+		//batch.enableBlending();
 		for(BodyView b : bodyViews)
 		{
 			b.draw();
@@ -138,7 +138,7 @@ public class Game extends ApplicationAdapter  {
 
 		batch.end();
 
-		debugRenderer.render(world, debugMatrix);
+		//debugRenderer.render(world, debugMatrix);
 
 
 	}

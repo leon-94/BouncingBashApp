@@ -2,6 +2,7 @@ package de.lmu.ifi.bouncingbash.app.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
@@ -38,7 +39,9 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             Gdx.app.log("Controller", "pressed Jump");
             //body.setLinearVelocity(body.getLinearVelocity().x, 2000f/PIXELS_TO_METERS);
-            body.applyForceToCenter(0,450f,true);
+            body.setLinearVelocity(body.getLinearVelocity().x, body.getLinearVelocity().y);
+
+            body.applyLinearImpulse(new Vector2(0, 13f),body.getWorldCenter(),true);
 
             return false;
         }
@@ -62,6 +65,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
         public boolean scrolled(int amount) {
             return false;
         }
+
     }
 
 

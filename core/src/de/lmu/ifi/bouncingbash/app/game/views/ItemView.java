@@ -12,8 +12,11 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import de.lmu.ifi.bouncingbash.app.game.ItemSpawnController;
+import de.lmu.ifi.bouncingbash.app.game.models.Entity;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Item;
 import de.lmu.ifi.bouncingbash.app.game.models.Platform;
@@ -28,7 +31,7 @@ public class ItemView implements BodyView{
     private SpriteBatch batch;
     private World world;
     private ItemSpawnController itemSpawnController;
-    private  HashMap<Sprite, Body> itemBodys = new HashMap<Sprite, Body>();
+    private  HashMap<Entity, Body> itemBodys = new HashMap<Entity, Body>();
 
     public ItemView(GameModel gameModel,World world,SpriteBatch batch)
     {
@@ -59,7 +62,7 @@ public class ItemView implements BodyView{
                         (spriteItem.getX() + spriteItem.getWidth() / 2) / PIXELS_TO_METERS,
                         (spriteItem.getY() + spriteItem.getHeight() / 2) / PIXELS_TO_METERS);
                 Body b = world.createBody(bodyDef);
-                getBodys().put(spriteItem, b);
+                getBodys().put(i, b);
 
                 PolygonShape shape = new PolygonShape();
                 shape.setAsBox(
@@ -79,27 +82,94 @@ public class ItemView implements BodyView{
 
         }
     }
-    public void draw()
+    public void setup(Item i)
     {
-        itemSpawnController.spawnItems();
-        setup();
-        for(Item i : gameModel.getMap().getItemArrayList()) {
 
-            batch.draw(i.getSprite(),
-                    i.getSprite().getX()
-                    , i.getSprite().getY()
-                   );
-            Body body = getBodys().get(i.getSprite());
-            i.getSprite().setPosition((body.getPosition().x * PIXELS_TO_METERS) - i.getSprite().
-                            getWidth() / 2,
-                    (body.getPosition().y * PIXELS_TO_METERS) - i.getSprite().getHeight() / 2);
-        }
+            //wenn noch kein sprite gesetzt wurde setze es und einen body
+            if(i.getSprite()==null) {
+                System.out.println("setup in if" +
+                        "");
+                Sprite s = new Sprite(new Texture(Gdx.files.internal(i.getType().getName())));
+                i.setSprite(s);
+                spriteItem = i.getSprite();
+                spriteItem.setPosition(i.getX(), i.getY());
+
+
+                BodyDef bodyDef = new BodyDef();
+                bodyDef.type = BodyDef.BodyType.StaticBody;
+                bodyDef.position.set(
+                        (spriteItem.getX() + spriteItem.getWidth() / 2) / PIXELS_TO_METERS,
+                        (spriteItem.getY() + spriteItem.getHeight() / 2) / PIXELS_TO_METERS);
+                Body b = world.createBody(bodyDef);
+                b.setUserData(new CustomUserData(false));
+                getBodys().put(i, b);
+
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(
+                        ((spriteItem.getWidth() / PIXELS_TO_METERS) / 2),
+                        (spriteItem.getHeight() / PIXELS_TO_METERS) / 2);
+
+
+                FixtureDef fixtureDef = new FixtureDef();
+                fixtureDef.shape = shape;
+                fixtureDef.density = 1f;
+
+                Fixture fixture2 = b.createFixture(fixtureDef);
+
+
+                shape.dispose();
+            }
 
     }
+    public void draw()
+    {
 
+        itemSpawnController.spawnItems();
+        //try catch falls grade noch das neue item eingefügt wird
+         try{
+
+
+            for (Item i : gameModel.getMap().getItemArrayList()) {
+                setup(i);
+                CustomUserData data = (CustomUserData) getBodys().get(i).getUserData();
+                if (getBodys().get(i) !=null || !data.isFlaggedForDelete()) {
+                    batch.draw(i.getSprite(),
+                            i.getSprite().getX()
+                            , i.getSprite().getY()
+                    );
+
+                    Body body = getBodys().get(i);
+                    System .out.println("body "+body+" sprite"+i.getSprite());
+                    i.getSprite().setPosition((body.getPosition().x * PIXELS_TO_METERS) - i.getSprite().
+                                    getWidth() / 2,
+                            (body.getPosition().y * PIXELS_TO_METERS) - i.getSprite().getHeight() / 2);
+                }
+            }
+
+         }
+         catch(Exception e)
+         {
+             e.printStackTrace();
+         }
+        sweepDeadBodies();
+
+    }
+    public void sweepDeadBodies() {
+        for (Map.Entry<Entity, Body> entry : getBodys().entrySet()) {
+            Body body = entry.getValue();
+            if (body != null) {
+                CustomUserData data = (CustomUserData) body.getUserData();
+                if (data != null && data.isFlaggedForDelete()) {
+                    world.destroyBody(body);
+                    body.setUserData(null);
+                    body = null;
+                }
+            }
+        }
+    }
 
     @Override
-    public HashMap<Sprite, Body> getBodys() {
+    public HashMap<Entity, Body> getBodys() {
         return itemBodys;
     }
 }

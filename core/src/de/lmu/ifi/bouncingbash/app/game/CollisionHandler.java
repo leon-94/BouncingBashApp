@@ -9,11 +9,17 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
+import de.lmu.ifi.bouncingbash.app.game.models.EffectType;
+import de.lmu.ifi.bouncingbash.app.game.models.Entity;
+import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
+import de.lmu.ifi.bouncingbash.app.game.models.Item;
 import de.lmu.ifi.bouncingbash.app.game.models.Platform;
 import de.lmu.ifi.bouncingbash.app.game.views.BallView;
 import de.lmu.ifi.bouncingbash.app.game.views.BodyView;
+import de.lmu.ifi.bouncingbash.app.game.views.CustomUserData;
 import de.lmu.ifi.bouncingbash.app.game.views.ItemView;
 import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
 
@@ -24,13 +30,15 @@ import de.lmu.ifi.bouncingbash.app.game.views.PlatformView;
 public class CollisionHandler {
     private ArrayList<BodyView> views;
     private World world;
+    private GameModel gameModel;
     //platzhalter
     private Body body1,body2;
     private BodyView ballView,platformView,itemView ;
-    public CollisionHandler(ArrayList<BodyView> views,World world)
+    public CollisionHandler(ArrayList<BodyView> views,World world, GameModel gameModel)
     {
         this.views = views;
         this.world = world;
+        this.gameModel = gameModel;
         for(BodyView view : views)
         {
             if(ItemView.class.isInstance(view))
@@ -54,11 +62,13 @@ public class CollisionHandler {
                 Body fA = contact.getFixtureA().getBody();
                 Body fB = contact.getFixtureB().getBody();
                 /**Ball Platform Collision**/
-                for(Map.Entry<Sprite,Body> entry : platformView.getBodys().entrySet())
+                for(Map.Entry<Entity,Body> entry : platformView.getBodys().entrySet())
                 {
                     Body platformBody = entry.getValue();
-                    for(Map.Entry<Sprite,Body> entry2: ballView.getBodys().entrySet()) {
-                        Body ballBody = entry.getValue();
+
+                    for(Map.Entry<Entity,Body> entry2: ballView.getBodys().entrySet()) {
+                        Body ballBody = entry2.getValue();
+
                         if ((fA == platformBody && fB == ballBody) ||
                                 (fA == ballBody && fB == platformBody)) {
 
@@ -68,15 +78,33 @@ public class CollisionHandler {
                     }
                 }
                 /**Ball item Collision**/
-                for(Map.Entry<Sprite,Body> entry : itemView.getBodys().entrySet())
+                for(Map.Entry<Entity,Body> entry : itemView.getBodys().entrySet())
                 {
                     Body itemBody = entry.getValue();
-                    for(Map.Entry<Sprite,Body> entry2: ballView.getBodys().entrySet()) {
-                        Body ballBody = entry.getValue();
+
+                    for(Map.Entry<Entity,Body> entry2: ballView.getBodys().entrySet()) {
+                        Body ballBody = entry2.getValue();
                         if ((fA == itemBody && fB == ballBody) ||
                                 (fA == ballBody && fB == itemBody)) {
+                            CustomUserData data = (CustomUserData) itemBody.getUserData();
+                            data.setIsFlaggedForDelete(true);
 
+                            gameModel.getPlayer1().getBall().setSpeed(10);
                             System.out.println("CONTACT ball body item body");
+                            System.out.println("" + fA + " " + fB);
+                        }
+                    }
+                }
+                /**Ball  ball Collision**/
+                for(Map.Entry<Entity,Body> entry : ballView.getBodys().entrySet())
+                {
+                    Body ballBody = entry.getValue();
+                    for(Map.Entry<Entity,Body> entry2: ballView.getBodys().entrySet()) {
+                        Body ballBody2 = entry2.getValue();
+                        if ((fA == ballBody2 && fB == ballBody) ||
+                                (fA == ballBody && fB == ballBody)) {
+
+                            System.out.println("CONTACT ball body ball body");
                             System.out.println("" + fA + " " + fB);
                         }
                     }

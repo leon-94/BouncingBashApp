@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import java.util.HashMap;
 
 import de.lmu.ifi.bouncingbash.app.game.BallController;
+import de.lmu.ifi.bouncingbash.app.game.models.Entity;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Map;
 
@@ -29,7 +30,7 @@ public class BallView implements BodyView {
     private Texture textureBall;
     private Sprite spriteBall;
     final float PIXELS_TO_METERS = 100f;
-    private  HashMap<Sprite, Body> ballBodys = new HashMap<Sprite, Body>();
+    private  HashMap<Entity, Body> ballBodys = new HashMap<Entity, Body>();
     private Body ballBody;
     private SpriteBatch batch;
     private World world;
@@ -48,6 +49,8 @@ public class BallView implements BodyView {
         spriteBall = new Sprite(textureBall);
         spriteBall.setPosition(Gdx.graphics.getWidth() / 2 - spriteBall.getWidth() / 2,
                 Gdx.graphics.getHeight() / 2);
+        //nur temporär bis zwischen 2 spielern unterschieden werden kann
+        gameModel.getPlayer1().getBall().setSprite(spriteBall);
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -62,7 +65,7 @@ public class BallView implements BodyView {
 
         FixtureDef fixtureDef1 = new FixtureDef();
         fixtureDef1.shape = circleShape;
-        fixtureDef1.density = 1f;
+        fixtureDef1.density = 0.5f;
         fixtureDef1.friction = 0.5f;
         fixtureDef1.restitution = 0.3f;
 
@@ -73,7 +76,7 @@ public class BallView implements BodyView {
         BallController ballController = new BallController(gameModel, ballBody);
         Gdx.input.setInputProcessor(ballController);
 
-        getBodys().put(spriteBall, ballBody);
+        ballBodys.put(gameModel.getPlayer1().getBall(), ballBody);
     }
 
     public void draw()
@@ -96,13 +99,13 @@ public class BallView implements BodyView {
     public void roll()
     {
         float adjustedY = Gdx.input.getAccelerometerY();
-        ballBody.setLinearVelocity(adjustedY, 0);
+        ballBody.setLinearVelocity(adjustedY * gameModel.getPlayer1().getBall().getSpeed(), 0);
 
 
     }
 
     @Override
-    public HashMap<Sprite, Body> getBodys() {
+    public HashMap<Entity, Body> getBodys() {
         return ballBodys;
     }
 }

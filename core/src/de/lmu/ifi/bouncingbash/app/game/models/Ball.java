@@ -4,31 +4,22 @@ package de.lmu.ifi.bouncingbash.app.game.models;
 /**
  * Created by Michael on 11.12.2015.
  */
-public class Ball {
+public class Ball extends Entity{
 
     //default Texture
     private String texture = "kugel.png";
 
     private Item item=null;
     private float jumpSpeed=20;
+    private float speed=1;
 
-    private int x=0,y=0;
-
-    public int getX() {
-        return x;
+    public float getSpeed() {
+        return speed;
     }
 
-    public void setX(int x) {
-        this.x = x;
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
     public float getJumpSpeed() {
         return jumpSpeed;
     }

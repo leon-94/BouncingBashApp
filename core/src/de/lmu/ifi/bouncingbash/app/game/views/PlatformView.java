@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.lmu.ifi.bouncingbash.app.game.models.Entity;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Platform;
 
@@ -28,7 +29,7 @@ public class PlatformView implements BodyView{
     private Body platformBody;
     private SpriteBatch batch;
     private World world;
-    private  HashMap<Sprite, Body> platformBodys = new HashMap<Sprite, Body>();
+    private  HashMap<Entity, Body> platformBodys = new HashMap<Entity, Body>();
 
     public PlatformView(GameModel gameModel,World world,SpriteBatch batch)
     {
@@ -55,7 +56,7 @@ public class PlatformView implements BodyView{
         (spritePlatform.getX() + spritePlatform.getWidth() /2 )/ PIXELS_TO_METERS,
         (spritePlatform.getY() + spritePlatform.getHeight() /2 )/ PIXELS_TO_METERS);
         Body b = world.createBody(bodyDef);
-        getBodys().put(spritePlatform, b);
+        getBodys().put(p, b);
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(
@@ -76,23 +77,25 @@ public class PlatformView implements BodyView{
     }
     public void draw()
     {
-        for(Platform p : gameModel.getMap().getPlatformArrayList()) {
-            batch.draw(p.getSprite(),
-                    p.getSprite().getX()
-                    , p.getSprite().getY(),
-                    p.getWidth(),
-                    p.getHeight());
-            Body body = getBodys().get(p.getSprite());
-            p.getSprite().setPosition((body.getPosition().x * PIXELS_TO_METERS) - p.getSprite().
-                            getWidth() / 2,
-                    (body.getPosition().y * PIXELS_TO_METERS) - p.getSprite().getHeight() / 2);
-        }
+
+            for(Platform p : gameModel.getMap().getPlatformArrayList()) {
+                batch.draw(p.getSprite(),
+                        p.getSprite().getX()
+                        , p.getSprite().getY(),
+                        p.getWidth(),
+                        p.getHeight());
+                Body body = getBodys().get(p);
+                p.getSprite().setPosition((body.getPosition().x * PIXELS_TO_METERS) - p.getSprite().
+                                getWidth() / 2,
+                        (body.getPosition().y * PIXELS_TO_METERS) - p.getSprite().getHeight() / 2);
+            }
+
 
     }
 
 
     @Override
-    public HashMap<Sprite, Body> getBodys() {
+    public HashMap<Entity, Body> getBodys() {
         return platformBodys;
     }
 }

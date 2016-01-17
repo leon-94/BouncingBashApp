@@ -28,31 +28,36 @@ public class ItemSpawnController {
     {
         if(spawn) {
             spawn = false;
-            int random = randInt(5,10);
-            System.out.println("Random "+random);
+            int random = randInt(5,20);
+            System.out.println("Random waiting time for item"+random);
             TimerTask timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     //if (gameModel.getPlayer1().isHost()) {
                     //zufällige Platform zum spawnen aussuchen
-                   /** int platforms=0;
+                    int platforms=0;
                     for(Platform p: gameModel.getMap().getPlatformArrayList())
                     {
                         platforms++;
                     }
-                    int randomPlatformNumber = randInt(0,platforms);**/
-                    Platform randomPlatform = gameModel.getMap().getPlatformArrayList().get(0);
+                    int randomPlatformNumber = randInt(0,platforms-1);
+                    Platform randomPlatform = gameModel.getMap().getPlatformArrayList().get(randomPlatformNumber);
                     Item item = new Item();
-                    item.setX(randomPlatform.getX());
-                    item.setY(randomPlatform.getY());
+                    item.setX(randomPlatform.getX() + randomPlatform.getWidth() / 2);
+                    item.setY(randomPlatform.getY() + randomPlatform.getHeight());
                     System.out.println("spawn Item");
-                        gameModel.getMap().getItemArrayList().add(item);
-                        spawn = true;
+                    gameModel.getMap().getItemArrayList().add(item);
+                    spawn = true;
+                    int x =0;
+                    for(Item i: gameModel.getMap().getItemArrayList())
+                    {
+                        System.out.println("Items in list " + x);
+                    }
                    // }
                 }
             };
             Timer timer = new Timer();
-            timer.schedule(timerTask, randInt(5, 10)*1000);
+            timer.schedule(timerTask, random*1000);
 
         }
     }

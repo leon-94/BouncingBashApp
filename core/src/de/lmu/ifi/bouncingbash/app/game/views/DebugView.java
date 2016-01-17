@@ -11,7 +11,7 @@ import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 /**
  * Created by Michi on 30.12.2015.
  */
-public class DebugView implements View {
+public class DebugView  {
     public GameModel gameModel;
     private Texture textureBackground;
     private Sprite spriteBackground;
