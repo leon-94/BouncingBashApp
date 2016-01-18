@@ -19,11 +19,15 @@ public class BackgroundView {
     {
         this.gameModel= gameModel;
         this.batch=batch;
+        setup();
+    }
+    public void setup()
+    {
         textureBackground = new Texture(Gdx.files.internal("background.png"));
         spriteBackground = new Sprite(textureBackground);
 
     }
-    public void drawBackground()
+    public void draw()
     {
         batch.draw(spriteBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }

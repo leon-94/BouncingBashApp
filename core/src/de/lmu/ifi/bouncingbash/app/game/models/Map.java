@@ -6,18 +6,18 @@ import java.util.ArrayList;
  * Created by Michael on 11.12.2015.
  */
 public class Map {
-    private ArrayList<de.lmu.ifi.bouncingbash.app.game.models.Platform> platformArrayList = new ArrayList<de.lmu.ifi.bouncingbash.app.game.models.Platform>();
+    private ArrayList<Platform> platformArrayList = new ArrayList<Platform>();
     private ArrayList<Item> itemArrayList = new ArrayList<Item>();
     //große Platform in der mitte
-    private de.lmu.ifi.bouncingbash.app.game.models.Platform mainPlatform = new de.lmu.ifi.bouncingbash.app.game.models.Platform();
+    private Platform mainPlatform = new Platform();
     private String backGround = "background.png";
 
 
-    public de.lmu.ifi.bouncingbash.app.game.models.Platform getMainPlatform() {
+    public Platform getMainPlatform() {
         return mainPlatform;
     }
 
-    public void setMainPlatform(de.lmu.ifi.bouncingbash.app.game.models.Platform mainPlatform) {
+    public void setMainPlatform(Platform mainPlatform) {
         this.mainPlatform = mainPlatform;
     }
 
@@ -37,11 +37,11 @@ public class Map {
         this.itemArrayList = itemArrayList;
     }
 
-    public void setPlatformArrayList(ArrayList<de.lmu.ifi.bouncingbash.app.game.models.Platform> platformArrayList) {
+    public void setPlatformArrayList(ArrayList<Platform> platformArrayList) {
         this.platformArrayList = platformArrayList;
     }
 
-    public ArrayList<de.lmu.ifi.bouncingbash.app.game.models.Platform> getPlatformArrayList() {
+    public ArrayList<Platform> getPlatformArrayList() {
 
         return platformArrayList;
     }
