@@ -7,6 +7,7 @@ import java.util.TimerTask;
 import de.lmu.ifi.bouncingbash.app.game.models.GameModel;
 import de.lmu.ifi.bouncingbash.app.game.models.Item;
 import de.lmu.ifi.bouncingbash.app.game.models.Platform;
+import de.lmu.ifi.bouncingbash.app.game.models.UpgradeType;
 
 /**
  * Created by Michi on 14.01.2016.
@@ -40,22 +41,35 @@ public class ItemSpawnController {
                     {
                         platforms++;
                     }
-                    int randomPlatformNumber = randInt(0,platforms-1);
+                    int randomPlatformNumber = randInt(0, platforms - 1);
                     Platform randomPlatform = gameModel.getMap().getPlatformArrayList().get(randomPlatformNumber);
-                    Item item = new Item();
-                    item.setX(randomPlatform.getX() + randomPlatform.getWidth() / 2);
-                    item.setY(randomPlatform.getY() + randomPlatform.getHeight());
-                    System.out.println("spawn Item");
-                    gameModel.getMap().getItemArrayList().add(item);
-                    spawn = true;
-                    int x =0;
-                    for(Item i: gameModel.getMap().getItemArrayList())
-                    {
-                        System.out.println("Items in list " + x);
-                    }
+                    int x =randomPlatform.getX() + randomPlatform.getWidth() / 2;
+                    int y =randomPlatform.getY() + randomPlatform.getHeight();
+
+                        for(Item i: gameModel.getMap().getItemArrayList())
+                        {
+                            if(x!=i.getX() && y !=i.getY())
+                            {
+                                Item item = new Item();
+                                item.setX(x);
+                                item.setY(y);
+                                //setze den typen des upgrades speed, fire etc.
+                                UpgradeType upgradeType = UpgradeType.randomUpgrade();
+                                item.setType(upgradeType);
+
+                                System.out.println("spawn Item");
+                                gameModel.getMap().getItemArrayList().add(item);
+                                spawn = true;
+                                break;
+                            }
+                        }
+
+
+
                    // }
                 }
             };
+
             Timer timer = new Timer();
             timer.schedule(timerTask, random*1000);
 

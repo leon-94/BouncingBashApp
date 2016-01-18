@@ -83,7 +83,7 @@ public class BallView implements BodyView {
     {
 
             spriteBall.setPosition(
-                    (ballBody.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
+                   (ballBody.getPosition().x * PIXELS_TO_METERS) - spriteBall.getWidth() / 2,
                     (ballBody.getPosition().y * PIXELS_TO_METERS) - spriteBall.getHeight() / 2);
 
         spriteBall.setRotation((float) Math.toDegrees(ballBody.getAngle()));

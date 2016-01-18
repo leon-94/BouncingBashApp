@@ -104,6 +104,8 @@ public class CollisionHandler {
                                     };
                                     Timer timer = new Timer();
                                     timer.schedule(timerTask, ballModel.getItem().getType().getLength() * 1000);
+                                case FIREUP:
+                                    break;
                                 default:
                                     break;
                             }
