@@ -33,7 +33,7 @@ public class Item extends PhysicsObject {
 
         private int width=100,height=100,x=0,y=0;
         private boolean spawn=true;
-        boolean taken=true;
+        public boolean taken=true;
         private UpgradeType upgradeType=null;
         private Game g;
 

@@ -436,14 +436,14 @@ public class Game extends ApplicationAdapter {
 
         message.add("ball", myBall.toJson());
         //items
-        if(GameData.isHost)
-        {
             for(Item i : myItems)
             {
-                    message.add("item",i.toJson());
+                if(i.taken) {
+                    message.add("item", i.toJson());
+                }
             }
-        }
-        
+
+
         btService.transmit(message);
 
 		Gdx.app.log(TAG, "transmitted: " + message.toString());
