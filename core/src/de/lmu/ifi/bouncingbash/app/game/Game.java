@@ -25,6 +25,7 @@ import de.lmu.ifi.bouncingbash.app.IActivity;
 import de.lmu.ifi.bouncingbash.app.IBluetoothService;
 import de.lmu.ifi.bouncingbash.app.game.animation.AnimationHandler;
 import de.lmu.ifi.bouncingbash.app.game.components.Ball;
+import de.lmu.ifi.bouncingbash.app.game.components.Item;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.Button;
 import de.lmu.ifi.bouncingbash.app.game.components.GameComponent;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.JumpBar;
@@ -114,6 +115,8 @@ public class Game extends ApplicationAdapter {
     private Ball ball2;
     public Ball myBall;
     public Ball otherBall;
+
+    public ArrayList<Item> myItems;
 
 	// game state
     public enum State {RUNNING, PAUSING, PAUSED, RESUMING, INIT};
@@ -291,6 +294,17 @@ public class Game extends ApplicationAdapter {
         add(new Switch(this, world, (int)Constants.WIDTH - 150, 20));
 //        add(new Switch(this, world, (int)Constants.WIDTH/2, 120));
         add(new Switch(this, world, 20, (int)Constants.HEIGHT - 150));
+
+        //items/itemspawnerpunkte
+        Item i1=new Item(this,world,100,100);
+        add(i1);
+        myItems.add(i1);
+        Item i2=new Item(this,world,100,400);
+        add(i2);
+        myItems.add(i2);
+        Item i3=new Item(this,world,400,100);
+        myItems.add(i3);
+        add(i3);
     }
 
     public void startGame() {
@@ -358,8 +372,8 @@ public class Game extends ApplicationAdapter {
             case PAUSED:
                 break;
         }
-        font1.draw(batch, "Game State: "+ getState().toString(), 5, Constants.HEIGHT - 20);
-        font1.draw(batch, "Game Time: "+ Float.toString(getGameTime()) +" ms", 5, Constants.HEIGHT - 50);
+        font1.draw(batch, "Game State: " + getState().toString(), 5, Constants.HEIGHT - 20);
+        font1.draw(batch, "Game Time: " + Float.toString(getGameTime()) + " ms", 5, Constants.HEIGHT - 50);
 
         batch.end();
 	}
@@ -421,6 +435,15 @@ public class Game extends ApplicationAdapter {
 		message.add("timestamp", getGameTime());
 
         message.add("ball", myBall.toJson());
+        //items
+        if(GameData.isHost)
+        {
+            for(Item i : myItems)
+            {
+                    message.add("item",i.toJson());
+            }
+        }
+        
         btService.transmit(message);
 
 		Gdx.app.log(TAG, "transmitted: " + message.toString());
