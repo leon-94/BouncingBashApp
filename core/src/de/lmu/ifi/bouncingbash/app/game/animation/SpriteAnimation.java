@@ -30,9 +30,6 @@ public class SpriteAnimation extends BasicAnimation {
     public SpriteAnimation(Vector2 position, float frametime, int frames, Texture tex, int rot,
                            float initAlpha, float fadingFactor, Vector2 initSize, float scalingFactor,
                            Color color) {
-        Gdx.app.log("SpriteAnimation", "created SpriteAnimation");
-        Gdx.app.log("SpriteAnimation", "position: "+ position.x +", "+ position.y);
-        Gdx.app.log("SpriteAnimation", "rotation: "+ rot);
 
         this.frames = frames;
         this.frametime = frametime;

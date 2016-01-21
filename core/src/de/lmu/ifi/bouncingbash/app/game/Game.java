@@ -5,8 +5,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -30,49 +30,13 @@ import de.lmu.ifi.bouncingbash.app.game.components.GameComponent;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.JumpBar;
 import de.lmu.ifi.bouncingbash.app.game.components.PhysicsObject;
 import de.lmu.ifi.bouncingbash.app.game.components.Switch;
+import de.lmu.ifi.bouncingbash.app.game.components.ui.LifeCounter;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.UIComponent;
 import de.lmu.ifi.bouncingbash.app.game.components.Wall;
 
 
 /***Spiel das gezeichnet wird**/
 public class Game extends ApplicationAdapter {
-
-    public Texture TEX_BALL;
-    public Texture TEX_CIRCLE;
-    public Texture TEX_CIRCLE2;
-    public Texture TEX_DIAMONT;
-    public Texture TEX_ARROW;
-    public Texture TEX_SWITCH;
-    public Texture TEX_DUST;
-
-    public BitmapFont FONT_CALIBRI_32;
-    public BitmapFont FONT_CALIBRI_64;
-
-//    public TextureAtlas ATLAS_DUST;
-
-    private void load() {
-
-        // textures
-        TEX_BALL = new Texture("ball.png");
-        TEX_CIRCLE = new Texture("circle.png");
-        TEX_CIRCLE2 = new Texture("circle2.png");
-        TEX_ARROW = new Texture("arrow.png");
-        TEX_SWITCH = new Texture("switch.png");
-        TEX_DUST = new Texture("dust.png");
-        TEX_DIAMONT = new Texture("diamont.png");
-
-        // fonts
-        FONT_CALIBRI_32 = new BitmapFont(Gdx.files.internal("fonts/calibri_32.fnt"));
-        FONT_CALIBRI_32.setColor(Color.WHITE);
-        FONT_CALIBRI_64 = new BitmapFont(Gdx.files.internal("fonts/calibri_64.fnt"));
-        FONT_CALIBRI_64.setColor(Color.WHITE);
-        FONT_CALIBRI_64.getData().setScale(2f);
-
-//        ATLAS_DUST = new TextureAtlas("dust/dust.pack");
-
-        Textures.load(this);
-    }
-
 
     public final static int RECON_METHOD_PER_MESSAGE = 0;
     public final static int RECON_METHOD_PER_UPDATE = 1;
@@ -92,12 +56,17 @@ public class Game extends ApplicationAdapter {
     ClockSynchronizer clockSync;
 
 	private SpriteBatch batch;
+    private BitmapFont font_calibri_32;
+    private BitmapFont font_calibri_64;
     private OrthographicCamera camera;
-	private BitmapFont font1;
-    private BitmapFont font2;
 	private World world;
 
     public AnimationHandler animationHandler;
+
+    // graphical elements
+    Sprite loadingScreen;
+    Sprite loadingScreen_ball;
+    Sprite loadingScreen_ball2;
 
     // all components
     public ArrayList<GameComponent> gameComponents;
@@ -106,9 +75,16 @@ public class Game extends ApplicationAdapter {
     public ArrayList<UIComponent> uiComponents;
 
     private JumpBar jumpBar;
+    private LifeCounter lifeCounter1;
+    private LifeCounter lifeCounter2;
 
     // physical components
     public ArrayList<PhysicsObject> physicsObjects;
+
+    private Player player1;
+    private Player player2;
+    private Player myPlayer;
+    private Player otherPlayer;
 
     private Ball ball1;
     private Ball ball2;
@@ -116,7 +92,7 @@ public class Game extends ApplicationAdapter {
     public Ball otherBall;
 
 	// game state
-    public enum State {RUNNING, PAUSING, PAUSED, RESUMING, INIT};
+    public enum State {INIT, RUNNING, PAUSED, DONE};
 	private State state = State.INIT;
 	public State getState() { return state; }
 	public void setState(State state) {
@@ -152,13 +128,19 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void create () {
-        load();
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera(Constants.WIDTH, Constants.HEIGHT);
         camera.setToOrtho(false, Constants.WIDTH, Constants.HEIGHT);
 
         world = new World(new Vector2(0, -1 * Constants.GRAVITY), true);
+
+        Assets.load();
+        font_calibri_32 = Assets.getAssets().getFont("FONT_CALIBRI_32");
+        font_calibri_64 = Assets.getAssets().getFont("FONT_CALIBRI_64");
+
+        // set up loading screen
+        initLoadingScreen();
 
         initUI();
         initGame();
@@ -168,23 +150,6 @@ public class Game extends ApplicationAdapter {
         world.setContactListener(new ContactListener() {
             @Override
             public void beginContact(Contact contact) {
-
-                Vector2 contactpoint = contact.getWorldManifold().getPoints()[0];
-                Body a = contact.getFixtureA().getBody();
-                Body b = contact.getFixtureB().getBody();
-
-                if ((a == myBall.getBody() && b == otherBall.getBody()) ||
-                        (a == otherBall.getBody() && b == myBall.getBody())) {
-
-                    Gdx.app.log(TAG, "collision");
-
-                    Vector2 normal = a.getPosition().sub(b.getPosition()).rotate90(1);
-                    int rotation = (int) normal.angle();
-
-                    animationHandler.contactAnim(contactpoint.scl(Constants.PIXELS_TO_METERS), rotation);
-                }
-
-                for (PhysicsObject p : physicsObjects) p.onCollision(contact, contactpoint, a, b);
             }
 
             @Override
@@ -197,19 +162,29 @@ public class Game extends ApplicationAdapter {
 
             @Override
             public void postSolve(Contact contact, ContactImpulse impulse) {
+
+                Vector2 contactpoint = contact.getWorldManifold().getPoints()[0];
+                Body a = contact.getFixtureA().getBody();
+                Body b = contact.getFixtureB().getBody();
+
+                // check for ball contact
+                if ((a == myBall.getBody() && b == otherBall.getBody()) ||
+                        (a == otherBall.getBody() && b == myBall.getBody())) {
+
+                    Vector2 normal = a.getPosition().sub(b.getPosition()).rotate90(1);
+                    int rotation = (int) normal.angle();
+
+                    // start contact animation
+                    animationHandler.contactAnim(contactpoint.scl(Constants.PIXELS_TO_METERS), rotation);
+                }
+
+                for (PhysicsObject p : physicsObjects) p.onCollision(contact, contactpoint, a, b);
             }
         });
 
         animationHandler = new AnimationHandler();
 
 		batch = new SpriteBatch();
-
-		font1 = new BitmapFont();
-		font1.setColor(Color.RED);
-        font1.getData().setScale(2, 2);
-        font2 = new BitmapFont();
-        font2.setColor(Color.RED);
-		font2.getData().setScale(5, 5);
 
 		setState(State.INIT);
 
@@ -229,15 +204,45 @@ public class Game extends ApplicationAdapter {
                 public void run() {
                     receive();
                 }
-            }, 0, Constants.CONN_FREQUENCY);
+            }, 0, Constants.CONN_FREQUENCY_READ);
         }
 
     }
 
+    private void initLoadingScreen() {
+
+        loadingScreen = new Sprite(Assets.getAssets().getTexture("TEX_TITLE"));
+        loadingScreen.setSize(Constants.WIDTH, Constants.HEIGHT);
+        loadingScreen_ball = new Sprite(Assets.getAssets().getTexture("TEX_BALL"));
+        loadingScreen_ball.setSize(128, 128);
+        loadingScreen_ball.setOriginCenter();
+        loadingScreen_ball.setPosition(500, 300);
+        loadingScreen_ball2 = new Sprite(Assets.getAssets().getTexture("TEX_BALL"));
+        loadingScreen_ball2.setSize(128, 128);
+        loadingScreen_ball2.setOriginCenter();
+        loadingScreen_ball2.setPosition(loadingScreen_ball.getX() + 90, loadingScreen_ball.getY() + 90);
+    }
+
+    private void disposeLoadingScreen() {
+        loadingScreen = null;
+        loadingScreen_ball = null;
+        loadingScreen_ball2 = null;
+        Assets.getAssets().disposeLoadingScreen();
+    }
+
     private void initUI() {
 
+        // create players
+        player1 = new Player();
+        player2 = new Player();
+
+        // UI
         jumpBar = new JumpBar(5, 5);
         add(jumpBar);
+        lifeCounter1 = new LifeCounter(5, Constants.HEIGHT - 55, player1);
+        add(lifeCounter1);
+        lifeCounter2 = new LifeCounter(Constants.WIDTH - 405, Constants.HEIGHT - 55, player2);
+        add(lifeCounter2);
 
         Button button1 = new Button("Quit", Constants.WIDTH - 200, Constants.HEIGHT - 80, 200, 80){
             @Override
@@ -251,17 +256,25 @@ public class Game extends ApplicationAdapter {
     private void initGame() {
 
         // create balls
-        ball1 = new Ball(this, world, Constants.WIDTH/2 - Constants.BALL_RADIUS, 50, GameData.isHost);
-        ball2 = new Ball(this, world, Constants.WIDTH/2 - Constants.BALL_RADIUS, 350, !GameData.isHost);
+        ball1 = new Ball(this, world, player1, GameData.isHost);
+        player1.setBall(ball1);
+        ball2 = new Ball(this, world, player2, !GameData.isHost);
+        player2.setBall(ball2);
 
         // indentify own ball
         if(GameData.isHost) {
+            myPlayer = player1;
+            otherPlayer = player2;
+
             myBall = ball1;
             otherBall = ball2;
             add(ball2);
             add(ball1);
         }
         else {
+            myPlayer = player2;
+            otherPlayer = player1;
+
             myBall = ball2;
             otherBall = ball1;
             add(ball1);
@@ -298,7 +311,7 @@ public class Game extends ApplicationAdapter {
         Gdx.app.log(TAG, "Game#startGame");
 
         GameData.gameStartTime = System.currentTimeMillis();
-        Gdx.app.log(TAG, "gameStartTime: "+ GameData.gameStartTime);
+        Gdx.app.log(TAG, "gameStartTime: " + GameData.gameStartTime);
         setState(State.RUNNING);
 
         Timer.schedule(new Timer.Task() {
@@ -314,8 +327,6 @@ public class Game extends ApplicationAdapter {
             }
         }, 0, Constants.SIM_FREQUENCY);
 
-
-
         // data exchange
         if(!GameData.debug_sp) {
 
@@ -324,9 +335,13 @@ public class Game extends ApplicationAdapter {
                 public void run() {
                     transmit();
                 }
-            }, 0, Constants.CONN_FREQUENCY);
+            }, 0, Constants.CONN_FREQUENCY_WRITE);
 
         }
+
+        // spawn balls
+        myBall.respawn(Constants.WIDTH/2 - Constants.BALL_RADIUS, 50);
+        otherBall.respawn(Constants.WIDTH/2 - Constants.BALL_RADIUS, 350);
     }
 
     public void update(float elapsedTime) {
@@ -336,11 +351,11 @@ public class Game extends ApplicationAdapter {
 	@Override
 	public void render() {
 
-        if((int)(getGameTime()) == flash + 1) {
-            flash++;
-            Gdx.gl.glClearColor(0, 0, 1, 1);
-        }
-        else Gdx.gl.glClearColor(1, 1, 1, 1);
+//        if((int)(getGameTime()) == flash + 1) {
+//            flash++;
+//            Gdx.gl.glClearColor(0, 0, 1, 1);
+//        }
+//        else Gdx.gl.glClearColor(1, 1, 1, 1);
 
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -350,47 +365,109 @@ public class Game extends ApplicationAdapter {
         switch(getState()) {
             case RUNNING:
                 for(PhysicsObject p : physicsObjects) p.render(batch);
-                for(GameComponent u : uiComponents) u.render(batch);
+                for(UIComponent u : uiComponents) u.render(batch);
                 animationHandler.render(batch);
                 break;
             case INIT:
+//                font_calibri_64.draw(batch, "Loading ...", (Constants.WIDTH - 400)/2, (Constants.HEIGHT - font_calibri_64.getLineHeight())/2);
+                loadingScreen.draw(batch);
+                loadingScreen_ball.setRotation(loadingScreen_ball.getRotation() + 2);
+                loadingScreen_ball.draw(batch);
+                loadingScreen_ball2.setRotation(loadingScreen_ball2.getRotation() - 2);
+                loadingScreen_ball2.draw(batch);
+                break;
+            case DONE:
+                for(PhysicsObject p : physicsObjects) p.render(batch);
+                for(UIComponent u : uiComponents) u.render(batch);
+                animationHandler.render(batch);
                 break;
             case PAUSED:
                 break;
         }
-        font1.draw(batch, "Game State: "+ getState().toString(), 5, Constants.HEIGHT - 20);
-        font1.draw(batch, "Game Time: "+ Float.toString(getGameTime()) +" ms", 5, Constants.HEIGHT - 50);
+        font_calibri_32.draw(batch, "Game State: " + getState().toString(), 5, Constants.HEIGHT - 20);
+        font_calibri_32.draw(batch, "Game Time: " + Float.toString(getGameTime()) + " ms", 5, Constants.HEIGHT - 50);
 
         batch.end();
 	}
 
-    /*@Override
+    @Override
     public void dispose() {
         world.dispose();
-        Textures.dispose();
+        Assets.getAssets().dispose();
     }
 
-    @Override
-    public void resume() {
-        Textures.load();
-    }*/
+//    private int lastEventId = GameData.isHost ? -2 : -1;
+//    private synchronized int getNewEventId() {
+//        lastEventId += 2;
+//        return lastEventId;
+//    }
+//    private synchronized void notifyIdCounter(int id) {
+//        if(lastEventId < id) lastEventId = id;
+//        else if(lastEventId == id) Gdx.app.log(TAG, "big problem");
+//    }
 
-    public void toggleGravity() {
-        Gdx.app.log(TAG, "toggleGravity");
+    private int event_toggle_gravity = -1;
+    private int event_toggle_gravity_tc = 0;
+    public void onToggleGravity() {
+        Gdx.app.log(TAG, "onToggleGravity");
+
+        // assign id to event
+        event_toggle_gravity++;
+        // set transmission counter so event (and its id) will be transmitted
+        event_toggle_gravity_tc = Constants.CONN_REPETITIONS;
+
+        doToggleGravity();
+    }
+    private void doToggleGravity() {
+        Gdx.app.log(TAG, "doToggleGravity");
+
         float sign = getGravityDirection() * -1;
         world.setGravity(new Vector2(0, sign * Constants.GRAVITY));
         int rotation = getGravityDirection() == 1 ? 0 : 180;
         animationHandler.gravityAnim(new Vector2(Constants.WIDTH / 2, Constants.HEIGHT / 2), rotation);
     }
 
+    private int event_death = -1;
+    private int event_death_tc = 0;
+    public void onDeath(Ball ball) {
+
+        // assign id to event
+        event_death++;
+        // set transmission counter so event (and its id) will be transmitted
+        event_death_tc = Constants.CONN_REPETITIONS;
+
+        doDeath(ball, 1);
+    }
+    private void doDeath(Ball ball, float delay) {
+//        final Ball b = ball;
+//        Timer.schedule(new Timer.Task() {
+//            @Override
+//            public void run() {
+//                b.respawn();
+//            }
+//        }, delay);
+
+        Player p = ball.getPlayer();
+        p.loseLife();
+        if(p.getLives() == 0) {
+            endGame(p);
+        }
+        else {
+            ball.respawn(Constants.WIDTH / 2 - Constants.BALL_RADIUS, 150);
+            animationHandler.spawnAnim(new Vector2(Constants.WIDTH/2 - Constants.BALL_RADIUS, 150));
+        }
+    }
+//    public void onFinishSpawning(float x, float y) {
+//        animationHandler.spawnAnim(new Vector2(x, y));
+//    }
+
+    private void endGame(Player loser) {
+        state = State.DONE;
+    }
+
     public void onJump(float x, float y) {
         jumpBar.onJump();
         animationHandler.jumpAnim(new Vector2(x, y + Math.signum(world.getGravity().y) * Constants.BALL_RADIUS));
-    }
-
-    public void onDeath(Ball ball) {
-        // TODO
-        ball.respawn();
     }
 
     private void add(GameComponent c) {
@@ -419,8 +496,19 @@ public class Game extends ApplicationAdapter {
 		// ...
         message.add("type", "gamedata");
 		message.add("timestamp", getGameTime());
-
         message.add("ball", myBall.toJson());
+
+        JsonObject events = new JsonObject();
+//        if(event_toggle_gravity_tc > 0) {
+            events.add("event_toggle_gravity", event_toggle_gravity);
+            event_toggle_gravity_tc--;
+//        }
+//        if(event_death_tc > 0) {
+            events.add("event_death", event_death);
+            event_death_tc--;
+//        }
+
+        message.add("events", events);
         btService.transmit(message);
 
 		Gdx.app.log(TAG, "transmitted: " + message.toString());
@@ -453,6 +541,7 @@ public class Game extends ApplicationAdapter {
                     break;
                 case "startgame":
                     GameData.meanLatency = message.getLong("meanlatency", 0);
+                    Gdx.app.log(TAG, "mean latency: "+ GameData.meanLatency);
                     startGame();
                 case "ping":
                     Long timestamp = message.getLong("timestamp", 0);
@@ -471,7 +560,26 @@ public class Game extends ApplicationAdapter {
     private void receiveGameData() {
         JsonObject message = btService.receiveLatest();
         if(message == null) return;
+        float timestamp = message.getFloat("timestamp", getGameTime());
+
         otherBall.processGameData(message);
+        JsonObject events = (JsonObject) message.get("events");
+
+        // handle events
+
+        // toggle gravity
+        int m_event_toggle_gravity = events.getInt("event_toggle_gravity", event_toggle_gravity);
+        if (m_event_toggle_gravity > event_toggle_gravity) {
+            event_toggle_gravity++;
+            doToggleGravity();
+        }
+
+        // death
+        int m_event_death = events.getInt("event_death", event_death);
+        if (m_event_toggle_gravity > event_toggle_gravity) {
+            event_death++;
+            doDeath(otherBall, 1 - (getGameTime() - timestamp));
+        }
     }
 
 

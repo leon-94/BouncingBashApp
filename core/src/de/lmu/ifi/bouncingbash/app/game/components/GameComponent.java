@@ -28,6 +28,7 @@ public abstract class GameComponent {
 
     public void render(SpriteBatch batch) {
         sprite.setAlpha(alphaValue);
+        sprite.setColor(color);
         sprite.draw(batch, alphaValue);
     }
 

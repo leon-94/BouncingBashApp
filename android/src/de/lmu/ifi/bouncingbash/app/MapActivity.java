@@ -180,20 +180,38 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private void updateSessions(ArrayList<Session> sessions) {
 
+//        for(Session session : sessions) {
+//            String hostId = session.getHostId();
+//            LatLng location = new LatLng(session.getLat(), session.getLng());
+//            Marker m = sessionMarkers.get(hostId);
+//            if(m == null) {
+//                sessionMarkers.put(hostId, mMap.addMarker(new MarkerOptions()
+//                        .position(location)
+//                        .title("An open session")
+//                        .snippet("hosted by " + session.getHostId())
+//                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_session))));
+//            }
+//            else {
+//                m.setPosition(location);
+//            }
+//        }
+
+        // remove markers from map
+        for(Marker m : sessionMarkers.values()) {
+            m.remove();
+        }
+        // clear map of markers
+        sessionMarkers.clear();
+        // add new session markers
         for(Session session : sessions) {
             String hostId = session.getHostId();
             LatLng location = new LatLng(session.getLat(), session.getLng());
-            Marker m = sessionMarkers.get(hostId);
-            if(m == null) {
-                sessionMarkers.put(hostId, mMap.addMarker(new MarkerOptions()
-                        .position(location)
-                        .title("An open session")
-                        .snippet("hosted by " + session.getHostId())
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_session))));
-            }
-            else {
-                m.setPosition(location);
-            }
+            sessionMarkers.put(hostId, mMap.addMarker(new MarkerOptions()
+                    .position(location)
+                    .title("An open session")
+                    .snippet("hosted by " + session.getHostId())
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_session))));
+
         }
     }
 
@@ -230,6 +248,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private void startGame() {
+
+        progress.cancel();
 
         Intent i = new Intent(this, AndroidLauncher.class);
         startActivity(i);

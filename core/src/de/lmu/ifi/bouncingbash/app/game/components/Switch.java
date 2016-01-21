@@ -32,7 +32,7 @@ public class Switch extends PhysicsObject {
 //        texture = new Texture(p);
 //        p.dispose();
 
-        texture = Textures.getTextures().getTexture("TEX_SWITCH");
+        texture = Assets.getAssets().getTexture("TEX_SWITCH");
 
         sprite = new Sprite(texture);
         sprite.setSize(130, 130);
@@ -81,7 +81,7 @@ public class Switch extends PhysicsObject {
         if( (a == game.myBall.getBody() || a == game.otherBall.getBody() ||
                 b == game.myBall.getBody() || b == game.otherBall.getBody())
                 && Game.getGameTime()-lastToggle > Constants.GRAVITY_TOGGLE_COOLDOWN) {
-            game.toggleGravity();
+            game.onToggleGravity();
             game.animationHandler.switchtAnim(new Vector2(sprite.getX() + sprite.getWidth()/2, sprite.getY() + sprite.getHeight()/2));
             lastToggle = Game.getGameTime();
         }

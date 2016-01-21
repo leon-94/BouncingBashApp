@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import de.lmu.ifi.bouncingbash.app.game.Textures;
+import de.lmu.ifi.bouncingbash.app.game.Assets;
 
 /**
  * Created by Leon on 12.01.2016.
@@ -25,7 +25,7 @@ public class Button extends UIComponent {
         this.text = text;
         this.alphaValue = .5f;
 
-        font = Textures.getTextures().getFont("FONT_CALIBRI_64");
+        font = Assets.getAssets().getFont("FONT_CALIBRI_64");
 
         Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
         p.setColor(Color.DARK_GRAY);

@@ -36,6 +36,7 @@ public abstract class PhysicsObject extends GameComponent{
         Vector2 position = body.getPosition();
         sprite.setPosition(position.x * Constants.PIXELS_TO_METERS - sprite.getWidth() / 2, position.y * Constants.PIXELS_TO_METERS - sprite.getHeight() / 2);
         sprite.setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+        sprite.setColor(color);
         sprite.draw(batch, alphaValue);
     }
 

@@ -2,9 +2,8 @@ package de.lmu.ifi.bouncingbash.app.game.components;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -23,11 +22,28 @@ public class Ball extends PhysicsObject {
 
     private final String TAG = "Ball";
 
+    public final int STATE_INIT = 0;
+    public final int STATE_SPAWNING = 1;
+    public final int STATE_ALIVE = 2;
+    public final int STATE_DEAD = 3;
+    private int state = STATE_INIT;
+
+//    public final int SUBSTATE_NONE = 0;
+//    public final int SUBSTATE_COLORED = 1;
+//    private int substate = SUBSTATE_NONE;
+
     boolean controllable;
 
+    private float spawnTime;
+
+    private Player player;
+    public Player getPlayer() { return player; }
+
+    // transmission
     float lastJump = 0;
     private boolean transmitJump = false;
 
+    private int m_state;
     private float m_timestamp;
     private float m_posx;
     private float m_posy;
@@ -40,9 +56,10 @@ public class Ball extends PhysicsObject {
     private float m_lastJump;
 
 
-    public Ball(Game g, World w, float x, float y, boolean controllable) {
+    public Ball(Game g, World w, Player p, boolean controllable) {
         super(g, w);
 
+        this.player = p;
         this.controllable = controllable;
 
 //        Color color;
@@ -65,26 +82,14 @@ public class Ball extends PhysicsObject {
 //        texture = new Texture(p);
 //        p.dispose();
 
-        color = controllable ? Color.CYAN : Color.GREEN;
-        texture = Textures.getTextures().getTexture("TEX_BALL");
+        color = controllable ? Color.GREEN : Color.YELLOW;
+        texture = Assets.getAssets().getTexture("TEX_BALL");
 
         sprite = new Sprite(texture);
         sprite.setSize(Constants.BALL_RADIUS * 2, Constants.BALL_RADIUS * 2);
-        sprite.setPosition(x, y);
+        sprite.setPosition(0, 0);
         sprite.setOriginCenter();
         sprite.setColor(color);
-
-        // setup trnasmitted position fileds
-        m_timestamp = 0;
-        m_posx = x;
-        m_posy = y;
-        m_angle = 0;
-        m_speedx = 0;
-        m_speedy = 0;
-        m_angularspeed = 0;
-        m_accelerometer = 0;
-        m_jump = 0;
-        m_lastJump = 0;
 
         // Now create a BodyDefinition.  This defines the physics objects type and position in the simulation
         BodyDef bodyDef = new BodyDef();
@@ -108,39 +113,91 @@ public class Ball extends PhysicsObject {
         fixtureDef.density = 1f;
         fixtureDef.friction = 0.4f;
         fixtureDef.restitution = 0.6f;
-
         /*
         // turn off collision between balls
         fixtureDef.filter.categoryBits = 0x2;
         fixtureDef.filter.maskBits = 0xD;
         */
-
         body.createFixture(fixtureDef);
-
-        // Shape is the only disposable of the lot, so get rid of it
         shape.dispose();
+
+        // setup trnasmitted position fileds
+        m_timestamp = 0;
+        m_posx = 0;
+        m_posy = 0;
+        m_angle = 0;
+        m_speedx = 0;
+        m_speedy = 0;
+        m_angularspeed = 0;
+        m_accelerometer = 0;
+        m_jump = 0;
+        m_lastJump = 0;
     }
 
     @Override
     public void update(float elapsedTime) {
 
-        if(controllable) {
-            float adjustedY = Gdx.input.getAccelerometerY();
-            body.applyForceToCenter(inputToForce(adjustedY) * elapsedTime, 0, true);
+        switch(state) {
 
-            if(game.getGravityDirection() == -1 && body.getPosition().y < -200/Constants.PIXELS_TO_METERS ||
-                    game.getGravityDirection() == 1 && body.getPosition().y > (200+Constants.HEIGHT)/Constants.PIXELS_TO_METERS ||
-                    body.getPosition().x < -200/Constants.PIXELS_TO_METERS ||
-                    body.getPosition().x > (200+Constants.WIDTH)/Constants.PIXELS_TO_METERS) {
+            case STATE_ALIVE:
+                if (controllable) {
+                    float adjustedY = Gdx.input.getAccelerometerY();
+                    body.applyForceToCenter(inputToForce(adjustedY) * elapsedTime, 0, true);
 
-                game.onDeath(this);
-            }
+                    if (game.getGravityDirection() == -1 && body.getPosition().y < -200 / Constants.PIXELS_TO_METERS ||
+                            game.getGravityDirection() == 1 && body.getPosition().y > (200 + Constants.HEIGHT) / Constants.PIXELS_TO_METERS ||
+                            body.getPosition().x < -200 / Constants.PIXELS_TO_METERS ||
+                            body.getPosition().x > (200 + Constants.WIDTH) / Constants.PIXELS_TO_METERS) {
+
+                        game.onDeath(this);
+                    }
+                } else {
+                    if (Game.reconMethod == Game.RECON_METHOD_PER_UPDATE)
+                        reconcilePerUpdate(elapsedTime);
+                    else if (Game.reconMethod == Game.RECON_METHOD_INPUT)
+                        reconcileInput(elapsedTime);
+                }
+                break;
+
+            case STATE_SPAWNING:
+                spawnTime += elapsedTime;
+                if (spawnTime < Constants.BALL_SPAWN_DURATION) {
+                    alphaValue = spawnTime / Constants.BALL_SPAWN_DURATION;
+                    body.setLinearVelocity(0, 0);
+                } else {
+                    body.setGravityScale(1);
+                    state = STATE_ALIVE;
+
+//                    color = Color.RED;
+//                    substate = SUBSTATE_COLORED;
+//                    game.onFinishSpawning(body.getPosition().x * Constants.PIXELS_TO_METERS, body.getPosition().y * Constants.PIXELS_TO_METERS);
+                }
+                break;
+
+            default:
+                break;
         }
-        else {
-            if(Game.reconMethod == Game.RECON_METHOD_PER_UPDATE) reconcilePerUpdate(elapsedTime);
-            else if(Game.reconMethod == Game.RECON_METHOD_INPUT) reconcileInput(elapsedTime);
-        }
 
+//        switch (substate) {
+//            case SUBSTATE_COLORED:
+//                color.r += 1*elapsedTime;
+//                if(color.r > 1) color.r = 1;
+//                color.g += 1*elapsedTime;
+//                if(color.g > 1) color.g = 1;
+//                color.b += 1*elapsedTime;
+//                if(color.b > 1) color.b = 1;
+//                if(color.r == 1 && color.g == 1 && color.b == 1) substate = SUBSTATE_NONE;
+//                break;
+//
+//            default:
+//                break;
+//        }
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        if(state == STATE_DEAD || state == STATE_INIT) return;
+        super.render(batch);
     }
 
     private float inputToForce(float y) {
@@ -149,6 +206,8 @@ public class Ball extends PhysicsObject {
     }
 
     public void jump() {
+        if(state != STATE_ALIVE) return;
+
         if(Game.getGameTime() - lastJump > Constants.JUMP_FREQ && game.getState() == Game.State.RUNNING) {
             lastJump = Game.getGameTime();
             body.setLinearVelocity(body.getLinearVelocity().x, 0);
@@ -161,8 +220,19 @@ public class Ball extends PhysicsObject {
         transmitJump = true;
     }
 
-    public void respawn() {
-        body.setTransform(Constants.RESPAWN.x / Constants.PIXELS_TO_METERS, Constants.RESPAWN.y / Constants.PIXELS_TO_METERS, 0);
+//    public void respawn() {
+//        respawn(Constants.RESPAWN.x / Constants.PIXELS_TO_METERS, Constants.RESPAWN.y / Constants.PIXELS_TO_METERS);
+//    }
+
+    public void respawn(float x, float y) {
+        if(state == STATE_SPAWNING) return;
+        state = STATE_SPAWNING;
+
+        spawnTime = 0;
+        alphaValue = 0;
+
+        body.setGravityScale(0);
+        body.setTransform(x / Constants.PIXELS_TO_METERS, y / Constants.PIXELS_TO_METERS, 0);
         body.setLinearVelocity(0, 0);
         body.setAngularVelocity(0);
     }
@@ -180,6 +250,7 @@ public class Ball extends PhysicsObject {
         jsonBall.add("angle", body.getAngle());
         jsonBall.add("anglularspeed", body.getAngularVelocity());
         jsonBall.add("accelerometer", Gdx.input.getAccelerometerY());
+        jsonBall.add("state", state);
         if(transmitJump) {
             jsonBall.add("jump", Game.getGameTime());
             transmitJump = false;
@@ -202,12 +273,14 @@ public class Ball extends PhysicsObject {
         m_angularspeed = jsonBall.getFloat("anglularspeed", 0);
         m_accelerometer = jsonBall.getFloat("accelerometer", 0);
         m_jump = jsonBall.getFloat("jump", m_lastJump);
+        m_state = jsonBall.getInt("state", state);
 
         if(Game.reconMethod == Game.RECON_METHOD_PER_MESSAGE || Game.reconMethod == Game.RECON_METHOD_INPUT) reconcilePerMessage();
     }
 
     private synchronized void reconcilePerMessage() {
 
+        // reconcile position
         float m_elapsedTime = Game.getGameTime() - m_timestamp;
 
         float dx = m_elapsedTime * m_speedx;
@@ -232,6 +305,9 @@ public class Ball extends PhysicsObject {
         body.setTransform(new_posx, new_posy, new_angle);
         body.setLinearVelocity(m_speedx, m_speedy);
         body.setAngularVelocity(m_angularspeed);
+
+        // other stuff
+        state = m_state;
     }
 
     private synchronized void reconcilePerUpdate(float elapsedTimeSinceUpdate) {
@@ -267,6 +343,7 @@ public class Ball extends PhysicsObject {
     }
 
     private synchronized void reconcileInput(float elapsedTime) {
+
         float adjustedY = m_accelerometer;
         body.applyForceToCenter(inputToForce(adjustedY) * elapsedTime, 0, true);
 
