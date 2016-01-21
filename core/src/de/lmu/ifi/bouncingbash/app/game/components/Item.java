@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
@@ -23,7 +24,7 @@ import java.util.TimerTask;
 import de.lmu.ifi.bouncingbash.app.game.Constants;
 import de.lmu.ifi.bouncingbash.app.game.Game;
 import de.lmu.ifi.bouncingbash.app.game.GameData;
-import de.lmu.ifi.bouncingbash.app.game.Textures;
+
 import de.lmu.ifi.bouncingbash.app.game.UpgradeType;
 
 /**
@@ -36,40 +37,44 @@ public class Item extends PhysicsObject {
         public boolean taken=true;
         private UpgradeType upgradeType=null;
         private Game g;
-
+        private Pixmap pixmap;
         public Item(Game g, World w, int x, int y) {
             super(g, w);
             this.x=x;
             this.y=y;
             this.g=g;
-            Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+            pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
             pixmap.setColor(Color.BLACK);
-            pixmap.fillCircle(0,0,width/2);
+            pixmap.fillCircle(0, 0, width / 2);
 
-            texture = new Texture(pixmap);
-            sprite = new Sprite(texture);
-            sprite.setPosition(x, y);
+
+            createSpawner();
         }
     @Override
     public void onCollision(Contact contact, Vector2 contactpoint, Body a, Body b) {
-        if(a != body && b != body) return;
-        Gdx.app.log("ITEM", "onCollision");
+        if(taken==false) {
+            if (a != body && b != body) return;
+            Gdx.app.log("ITEM", "onCollision");
 
-        if( (a == game.myBall.getBody() || a == game.otherBall.getBody() ||
-                b == game.myBall.getBody() || b == game.otherBall.getBody())) {
-            taken=true;
-            switch(upgradeType)
-            {
-                case SPEEDUP:
-                    break;
-                case FIREUP:
-                    break;
-                default:
-                    break;
+            if ((a == game.myBall.getBody() || a == game.otherBall.getBody() ||
+                    b == game.myBall.getBody() || b == game.otherBall.getBody())) {
+                taken = true;
+                sprite = new Sprite(new Texture(pixmap));
+                spawn = true;
+                g.myItem=this;
+                System.out.println(upgradeType);
+                switch (upgradeType) {
+                    case SPEEDUP:
+                        break;
+                    case FIREUP:
+                        break;
+                    default:
+                        break;
+                }
+
+
             }
-           // game.animationHandler.switchtAnim(new Vector2(sprite.getX() + sprite.getWidth()/2, sprite.getY() + sprite.getHeight()/2));
-
         }
     }
 
@@ -88,7 +93,7 @@ public class Item extends PhysicsObject {
                 @Override
                 public void run() {
                             //setze den typen des upgrades speed, fire etc.
-                            upgradeType = UpgradeType.randomUpgrade();
+                    upgradeType = UpgradeType.randomUpgrade();
 
                     createItem();
 
@@ -103,10 +108,10 @@ public class Item extends PhysicsObject {
 
         }
     }
-    /**creates item sprite and body**/
-    public void createItem()
+    public void createSpawner()
     {
-        sprite=new Sprite(Textures.getTextures().getTexture(upgradeType.getName()));
+
+        sprite = new Sprite(new Texture(pixmap));
         sprite.setPosition(x, y);
 
         // Now create a BodyDefinition.  This defines the physics objects type and position in the simulation
@@ -119,8 +124,39 @@ public class Item extends PhysicsObject {
         // Create a body in the world using our definition
         body = world.createBody(bodyDef);
 
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(sprite.getWidth() / 2 / Constants.PIXELS_TO_METERS, sprite.getHeight() / 2 / Constants.PIXELS_TO_METERS);
+        CircleShape shape = new CircleShape();
+        shape.setRadius(Constants.BALL_RADIUS / Constants.PIXELS_TO_METERS);
+
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 1f;
+        fixtureDef.friction = 0.4f;
+
+        body.createFixture(fixtureDef);
+
+        // Shape is the only disposable of the lot, so get rid of it
+        shape.dispose();
+    }
+    /**creates item sprite and body**/
+    public void createItem()
+    {
+
+        sprite=new Sprite(new Texture(upgradeType.getName()));
+        sprite.setPosition(x, y);
+
+        // Now create a BodyDefinition.  This defines the physics objects type and position in the simulation
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        // We are going to use 1 to 1 dimensions.  Meaning 1 in physics engine is 1 pixel
+        // Set our body to the same position as our sprite
+        bodyDef.position.set( (sprite.getX() + sprite.getWidth()/2 ) / Constants.PIXELS_TO_METERS, (sprite.getY() + sprite.getHeight()/2 ) / Constants.PIXELS_TO_METERS);
+
+        // Create a body in the world using our definition
+        body = world.createBody(bodyDef);
+
+        CircleShape shape = new CircleShape();
+        shape.setRadius(Constants.BALL_RADIUS / Constants.PIXELS_TO_METERS);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -180,7 +216,7 @@ public class Item extends PhysicsObject {
 
                 if(posxItem ==x&&posyItem ==y &&upgradeType==null)
                 {
-                    sprite=new Sprite(Textures.getTextures().getTexture(upgradeType.getName()));
+                    sprite=new Sprite(new Texture(upgradeType.getName()));
                     taken=taken2;
                 }
 

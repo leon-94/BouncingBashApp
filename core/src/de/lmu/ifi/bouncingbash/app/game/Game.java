@@ -25,6 +25,7 @@ import de.lmu.ifi.bouncingbash.app.IActivity;
 import de.lmu.ifi.bouncingbash.app.IBluetoothService;
 import de.lmu.ifi.bouncingbash.app.game.animation.AnimationHandler;
 import de.lmu.ifi.bouncingbash.app.game.components.Ball;
+import de.lmu.ifi.bouncingbash.app.game.components.Item;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.Button;
 import de.lmu.ifi.bouncingbash.app.game.components.GameComponent;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.JumpBar;
@@ -90,6 +91,8 @@ public class Game extends ApplicationAdapter {
     private Ball ball2;
     public Ball myBall;
     public Ball otherBall;
+    /**the item you took**/
+    public Item myItem;
 
 	// game state
     public enum State {INIT, RUNNING, PAUSED, DONE};
@@ -105,7 +108,7 @@ public class Game extends ApplicationAdapter {
 
 	public Game(IActivity act, IBluetoothService bts) {
 		super();
-
+        GameData.debug_sp=true;
 		// handle singleplayer debug mode
 		if(!GameData.debug_sp) {
 			btService = bts;
@@ -304,6 +307,10 @@ public class Game extends ApplicationAdapter {
         add(new Switch(this, world, (int)Constants.WIDTH - 150, 20));
 //        add(new Switch(this, world, (int)Constants.WIDTH/2, 120));
         add(new Switch(this, world, 20, (int)Constants.HEIGHT - 150));
+
+        add(new Item(this,world, (int)Constants.WIDTH-200,(int)Constants.HEIGHT -200));
+        add(new Item(this,world,200,(int)Constants.HEIGHT -300));
+        add(new Item(this,world,(int)Constants.WIDTH-200,400));
     }
 
     public void startGame() {
