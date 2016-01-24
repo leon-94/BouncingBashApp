@@ -27,7 +27,7 @@ import de.lmu.ifi.bouncingbash.app.IBluetoothService;
 import de.lmu.ifi.bouncingbash.app.game.animation.AnimationHandler;
 import de.lmu.ifi.bouncingbash.app.game.components.Ball;
 import de.lmu.ifi.bouncingbash.app.game.components.Map;
-import de.lmu.ifi.bouncingbash.app.game.components.ui.Button;
+import de.lmu.ifi.bouncingbash.app.game.components.Item;
 import de.lmu.ifi.bouncingbash.app.game.components.GameComponent;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.JumpBar;
 import de.lmu.ifi.bouncingbash.app.game.components.PhysicsObject;
@@ -95,6 +95,8 @@ public class Game extends ApplicationAdapter {
     private Ball ball2;
     public Ball myBall;
     public Ball otherBall;
+    /**the item you took**/
+    public Item myItem;
 
 //    public ArrayList<Item> myItems;
 
@@ -112,7 +114,7 @@ public class Game extends ApplicationAdapter {
 
 	public Game(IActivity act, IBluetoothService bts) {
 		super();
-
+        GameData.debug_sp=true;
 		// handle singleplayer debug mode
 		if(!GameData.debug_sp) {
 			btService = bts;
@@ -382,6 +384,7 @@ public class Game extends ApplicationAdapter {
         for(int i = 0; i < map.switches.length; i++) {
             add(map.switches[i]);
         }
+
 
 //        //items/itemspawnerpunkte
 //        Item i1=new Item(this,world,100,100);

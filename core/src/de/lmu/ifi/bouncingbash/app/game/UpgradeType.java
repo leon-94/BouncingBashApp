@@ -9,7 +9,7 @@ import java.util.Random;
  * Created by Michael on 11.12.2015.
  */
 public enum UpgradeType {
-    SPEEDUP("speedUp",10),FIREUP("fireUp",10);
+    SPEEDUP("speedUp.png",10),FIREUP("fireUp.png",10);
     private String name;
     private int length;
     private static final List<UpgradeType> VALUES =
