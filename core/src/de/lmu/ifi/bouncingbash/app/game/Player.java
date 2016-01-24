@@ -3,6 +3,7 @@ package de.lmu.ifi.bouncingbash.app.game;
 import com.badlogic.gdx.graphics.Color;
 
 import de.lmu.ifi.bouncingbash.app.game.components.Ball;
+import de.lmu.ifi.bouncingbash.app.game.components.Item;
 
 /**
  * Created by Leon on 21.01.2016.
@@ -12,6 +13,7 @@ public class Player {
     private int lives = Constants.LIVES;
     private Color color;
     private Ball ball;
+    private Item item;
 
     public Player(Color c) {
         color = c;
@@ -37,5 +39,11 @@ public class Player {
     public void setBall(Ball b) {
         ball = b;
     }
+    public Item getItem() {
+        return item;
+    }
 
+    public void setItem(Item item) {
+        this.item = item;
+    }
 }

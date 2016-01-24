@@ -27,6 +27,8 @@ public class Assets {
     public Texture TEX_YOUWON;
     public Texture TEX_YOULOST;
     public Texture TEX_DOT;
+    public Texture TEX_FIRE_UP;
+    public Texture TEX_SPEED_UP;
 
     public BitmapFont FONT_CALIBRI_32;
     public BitmapFont FONT_CALIBRI_64;
@@ -74,6 +76,10 @@ public class Assets {
         textures.put("TEX_BACKGROUND0", TEX_BACKGROUND0);
         TEX_BACKGROUND1 = new Texture("background1.png");
         textures.put("TEX_BACKGROUND1", TEX_BACKGROUND1);
+        TEX_FIRE_UP = new Texture("fireUp.png");
+        textures.put("TEX_FIRE_UP", TEX_FIRE_UP);
+        TEX_SPEED_UP = new Texture("speedUp.png");
+        textures.put("TEX_SPEED_UP", TEX_SPEED_UP);
 
         Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p.setColor(Color.WHITE);

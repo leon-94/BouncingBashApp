@@ -88,8 +88,8 @@ public class Game extends ApplicationAdapter {
 
     private Player player1;
     private Player player2;
-    private Player myPlayer;
-    private Player otherPlayer;
+    public Player myPlayer;
+    public Player otherPlayer;
 
     private Ball ball1;
     private Ball ball2;
@@ -98,7 +98,7 @@ public class Game extends ApplicationAdapter {
     /**the item you took**/
     public Item myItem;
 
-//    public ArrayList<Item> myItems;
+    public ArrayList<Item> items;
 
 	// game state
     public enum State {INIT, RUNNING, PAUSED, DONE};
@@ -114,7 +114,7 @@ public class Game extends ApplicationAdapter {
 
 	public Game(IActivity act, IBluetoothService bts) {
 		super();
-        GameData.debug_sp=true;
+
 		// handle singleplayer debug mode
 		if(!GameData.debug_sp) {
 			btService = bts;
@@ -128,6 +128,7 @@ public class Game extends ApplicationAdapter {
         gameComponents = new ArrayList<>();
         uiComponents = new ArrayList<>();
         physicsObjects = new ArrayList<>();
+        items = new ArrayList<>();
 	}
 
 	public static float getGameTime() {
@@ -386,16 +387,15 @@ public class Game extends ApplicationAdapter {
         }
 
 
-//        //items/itemspawnerpunkte
-//        Item i1=new Item(this,world,100,100);
-//        add(i1);
-//        myItems.add(i1);
-//        Item i2=new Item(this,world,100,400);
-//        add(i2);
-//        myItems.add(i2);
-//        Item i3=new Item(this,world,400,100);
-//        myItems.add(i3);
-//        add(i3);
+        Item i1 =new Item(this,world, (int)Constants.WIDTH-200,(int)Constants.HEIGHT -200);
+        add(i1);
+        items.add(i1);
+        Item i2 =new Item(this, world, 200, (int) Constants.HEIGHT - 300);
+        add(i2);
+        items.add(i2);
+        Item i3 =new Item(this,world,(int)Constants.WIDTH-200,400);
+        add(i3);
+        items.add(i3);
     }
 
     public void startGame() {
@@ -596,13 +596,20 @@ public class Game extends ApplicationAdapter {
 //
 //        message.add("events", events);
 //
-////        //items
-////            for(Item i : myItems)
-////            {
-////                if(i.taken) {
-////                    message.add("item", i.toJson());
-////                }
-////            }
+        /**sende item fals du eins aufgenommen hast**/
+        /**if(myPlayer.getItem()!=null)
+         {
+         message.add("item",myPlayer.getItem().toJson());
+         }**/
+        /**sende ein item fals du host bist und fals es erzeugt wurde**/
+        if(GameData.isHost) {
+            for (Item i : items) {
+                if (i.spawned) {
+                    i.spawned=false;
+                    message.add("item",i.toJson());
+                }
+            }
+        }
 
         btService.transmit(message);
 
@@ -661,7 +668,14 @@ public class Game extends ApplicationAdapter {
 
         // let ball handle its position
         otherBall.processGameData(message);
+        //items
+        for (Item i : items) {
+            if((JsonObject) message.get("item")!=null) {
+                JsonObject jsonItem = (JsonObject) message.get("item");
+                i.processGameData(message);
+            }
 
+        }
         // correct gravity direction if necassary
         final float direction = message.getFloat("gravity", getGravityDirection());
         if(direction != getGravityDirection()) {

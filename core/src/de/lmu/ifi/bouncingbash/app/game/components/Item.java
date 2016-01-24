@@ -26,6 +26,7 @@ import de.lmu.ifi.bouncingbash.app.game.Constants;
 import de.lmu.ifi.bouncingbash.app.game.Game;
 import de.lmu.ifi.bouncingbash.app.game.GameData;
 
+import de.lmu.ifi.bouncingbash.app.game.Player;
 import de.lmu.ifi.bouncingbash.app.game.UpgradeType;
 
 /**
@@ -33,25 +34,28 @@ import de.lmu.ifi.bouncingbash.app.game.UpgradeType;
  */
 public class Item extends PhysicsObject {
 
-        private int width=100,height=100,x=0,y=0;
-        private boolean spawn=true;
-        public boolean taken=true;
-        private UpgradeType upgradeType=null;
-        private Game g;
-        private Pixmap pixmap;
-        public Item(Game g, World w, int x, int y) {
-            super(g, w);
-            this.x=x;
-            this.y=y;
-            this.g=g;
-            pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+    private int width=100,height=100,x=0,y=0;
+    /**flag um zu wissen ob item erzeugt werden kann**/
+    private boolean spawn=true;
+    /**flag um zu sehen ob item erzeugt wurde**/
+    public boolean spawned=false;
+    public boolean taken=true;
+    public UpgradeType upgradeType=null;
+    private Game g;
+    private Pixmap pixmap;
+    public Item(Game g, World w, int x, int y) {
+        super(g, w);
+        this.x=x;
+        this.y=y;
+        this.g=g;
+        pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
-            pixmap.setColor(Color.BLACK);
-            pixmap.fillCircle(0, 0, width / 2);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fillCircle(0, 0, width / 2);
 
 
-            createSpawner();
-        }
+        createSpawner();
+    }
     @Override
     public void onCollision(Contact contact, Vector2 contactpoint, Body a, Body b) {
         if(taken==false) {
@@ -63,10 +67,23 @@ public class Item extends PhysicsObject {
                 taken = true;
                 sprite = new Sprite(new Texture(pixmap));
                 spawn = true;
-                g.myItem=this;
-                System.out.println(upgradeType);
+                spawned = false;
+                Player p = null;
+                if(a == game.myBall.getBody() ||b == game.myBall.getBody() ) {
+                    p =g.myPlayer;
+                    p.setItem(this);
+                }
+                else{
+                    p =g.otherPlayer;
+                    p.setItem(this);
+                }
+
+                //TODO animationen für jeweiliges upgrade
                 switch (upgradeType) {
                     case SPEEDUP:
+                        if(p.getItem().upgradeType!=UpgradeType.SPEEDUP) {
+                            p.getBall().speedFactor = 2.5f;
+                        }
                         break;
                     case FIREUP:
                         break;
@@ -93,14 +110,14 @@ public class Item extends PhysicsObject {
             TimerTask timerTask = new TimerTask() {
                 @Override
                 public void run() {
-                            //setze den typen des upgrades speed, fire etc.
+                    //setze den typen des upgrades speed, fire etc.
                     upgradeType = UpgradeType.randomUpgrade();
-
+                    System.out.println("item "+upgradeType.getName());
                     createItem();
 
-
+                    spawned=true;
                     taken=false;
-                    }
+                }
 
             };
 
@@ -142,12 +159,14 @@ public class Item extends PhysicsObject {
     /**creates item sprite and body**/
     public void createItem()
     {
-//<<<<<<< HEAD
-//        sprite=new Sprite(Assets.getAssets().getTexture(upgradeType.getName()));
-//=======
-//
-//        sprite=new Sprite(new Texture(upgradeType.getName()));
-//>>>>>>> 97b741517f8a9c382ebd0b0c3613aab9ee80a01b
+        Texture t = null;
+        switch(upgradeType)
+        {
+            case FIREUP: t=Assets.getAssets().getTexture("TEX_FIRE_UP");
+                break;
+            case SPEEDUP: t=Assets.getAssets().getTexture("TEX_SPEED_UP");
+        }
+        sprite=new Sprite(t);
         sprite.setPosition(x, y);
 
         // Now create a BodyDefinition.  This defines the physics objects type and position in the simulation
@@ -194,10 +213,10 @@ public class Item extends PhysicsObject {
     public JsonObject toJson() {
         JsonObject jsonItem = new JsonObject();
 
-        Vector2 position = body.getPosition();
+        //Vector2 position = body.getPosition();
 
-        jsonItem.add("posxItem", position.x);
-        jsonItem.add("posyItem", position.y);
+        jsonItem.add("posxItem", x);
+        jsonItem.add("posyItem", y);
         jsonItem.add("taken", taken);
         jsonItem.add("upgradeType", upgradeType.getName());
         return jsonItem;
@@ -206,28 +225,37 @@ public class Item extends PhysicsObject {
 
         JsonObject jsonItem = (JsonObject) message.get("item");
 
-        float posxItem = jsonItem.getFloat("posxItem", 0);
-        float posyItem = jsonItem.getFloat("posyItem", 0);
+        int posxItem = jsonItem.getInt("posxItem", 0);
+        int posyItem = jsonItem.getInt("posyItem", 0);
         boolean taken2= jsonItem.getBoolean("taken", false);
         String upgradeType2 = jsonItem.getString("upgradeType", "");
-
+        //System.out.println("Item received "+posxItem+" "+posyItem+" "+taken2+" "+upgradeType2);
+        //System.out.println("Item compared "+x+" "+y+" "+taken+" "+upgradeType);
         for(UpgradeType up:UpgradeType.values())
         {
-            if(up.getName()==upgradeType2)
+
+            if(posxItem ==x&&posyItem ==y &&up.getName().equals(upgradeType2))
             {
-                upgradeType=up;
+                System.out.println("set upgradetype and item");
+                if(taken2==false)
+                {
+                    upgradeType=up;
+                    createItem();
+
+                    spawned=true;
+                    taken=false;
+                }
+
             }
         }
+        //when das item genommen wurde und das item nicht von mir genommen wurde setze
+        // das item des anderen Spielers auf das empfangene Item
 
-                if(posxItem ==x&&posyItem ==y &&upgradeType==null)
-                {
-//<<<<<<< HEAD
-//                    sprite=new Sprite(Assets.getAssets().getTexture(upgradeType.getName()));
-//=======
-//                    sprite=new Sprite(new Texture(upgradeType.getName()));
-//>>>>>>> 97b741517f8a9c382ebd0b0c3613aab9ee80a01b
-                    taken=taken2;
-                }
+        if(taken2&&g.myPlayer.getItem().x!=posxItem&&g.myPlayer.getItem().y!=posyItem) {
+            g.otherPlayer.setItem(this);
+        }
+
+
 
 
 

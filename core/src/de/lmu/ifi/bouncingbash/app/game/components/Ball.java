@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.eclipsesource.json.JsonObject;
@@ -33,6 +34,8 @@ public class Ball extends PhysicsObject {
 //    private int substate = SUBSTATE_NONE;
 
     boolean controllable;
+
+    public float speedFactor=1;
 
     private float spawnTime;
 
@@ -202,7 +205,7 @@ public class Ball extends PhysicsObject {
     }
 
     private float inputToForce(float y) {
-        return Constants.ACCEL_STRENGTH *y/Constants.PIXELS_TO_METERS;
+        return speedFactor*Constants.ACCEL_STRENGTH *y/Constants.PIXELS_TO_METERS;
         //return 1*y/body.getLinearVelocity().x/Constants.PIXELS_TO_METERS;
     }
 
@@ -388,7 +391,40 @@ public class Ball extends PhysicsObject {
         body.applyForceToCenter(inputToForce(adjustedY) * elapsedTime, 0, true);
     }
 
+    @Override
+    public void onCollision(Contact contact, Vector2 contactpoint, Body a, Body b) {
+        if ((a == game.myBall.getBody() && b == game.otherBall.getBody() ||
+                b == game.myBall.getBody() && a == game.otherBall.getBody())) {
+            Gdx.app.log("Ball", "onCollision");
+            if(game.myPlayer.getItem().upgradeType!=null) {
+                UpgradeType myU = game.myPlayer.getItem().upgradeType;
+                switch (myU) {
+                    case FIREUP:
+                        game.otherPlayer.setLives(game.otherPlayer.getLives() - 1);
+                        game.myPlayer.setItem(null);
+                        break;
+                    case SPEEDUP:
 
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if( game.otherPlayer.getItem().upgradeType!=null) {
+                UpgradeType otherU = game.otherPlayer.getItem().upgradeType;
+                switch (otherU) {
+                    case FIREUP:
+                        game.myPlayer.setLives(game.myPlayer.getLives() - 1);
+                        game.otherPlayer.setItem(null);
+                        break;
+                    case SPEEDUP:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
     public Body getBody() {
         return body;
     }
