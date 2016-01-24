@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.eclipsesource.json.JsonObject;
 
 import de.lmu.ifi.bouncingbash.app.game.Game;
 import de.lmu.ifi.bouncingbash.app.game.*;
@@ -18,12 +19,39 @@ import de.lmu.ifi.bouncingbash.app.game.*;
  */
 public class Switch extends PhysicsObject {
 
+    float x, y;
     private float lastToggle = 0;
 
     public Switch(Game g, World w, float x, float y) {
         super(g, w);
 
+        this.x = x;
+        this.y = y;
 
+        initSwitch();
+    }
+
+    public Switch(Game g, World w, JsonObject jsonSwitch) {
+        super(g, w);
+
+        this.x = jsonSwitch.getFloat("x", 0);
+        this.y = jsonSwitch.getFloat("y", 0);
+
+        initSwitch();
+    }
+
+    public JsonObject toJson() {
+        JsonObject jsonWall = new JsonObject();
+
+        jsonWall.add("x", x);
+        jsonWall.add("y", y);
+
+        return jsonWall;
+    }
+
+
+
+    private void initSwitch() {
 //        Pixmap p = new Pixmap(50, 50, Pixmap.Format.RGBA8888);
 //        p.setColor(Color.GRAY);
 //        p.fill();

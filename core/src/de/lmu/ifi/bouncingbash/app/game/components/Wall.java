@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.eclipsesource.json.JsonObject;
 
 import de.lmu.ifi.bouncingbash.app.game.Game;
 import de.lmu.ifi.bouncingbash.app.game.*;
@@ -17,15 +18,49 @@ import de.lmu.ifi.bouncingbash.app.game.*;
  */
 public class Wall extends PhysicsObject {
 
+    int x, y, width, height;
 
     public Wall(Game g, World w, int x, int y, int width, int height) {
         super(g, w);
 
-        int borderWidth = 3;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+
+        initWall();
+    }
+
+    public Wall(Game g, World w, JsonObject jsonWall) {
+        super(g, w);
+
+        this.x = jsonWall.getInt("x", 0);
+        this.y = jsonWall.getInt("y", 0);
+        this.width = jsonWall.getInt("width", 0);
+        this.height = jsonWall.getInt("height", 0);
+
+        initWall();
+    }
+
+    public JsonObject toJson() {
+        JsonObject jsonWall = new JsonObject();
+
+        jsonWall.add("x", x);
+        jsonWall.add("y", y);
+        jsonWall.add("width", width);
+        jsonWall.add("height", height);
+
+        return jsonWall;
+    }
+
+
+    public void initWall() {
+
+        int borderWidth = 5;
 
         Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
-        pixmap.setColor(Color.RED);
+        pixmap.setColor(Color.CYAN);
         pixmap.fill();
         pixmap.setColor(Color.BLACK);
         pixmap.fillRectangle(0, 0, width, borderWidth);

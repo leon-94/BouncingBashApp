@@ -5,31 +5,34 @@ import com.eclipsesource.json.JsonObject;
 public class Session {
 
     private String hostId;
-	private String otherId;
-	private String hostMac;
-	private String otherMac;
-	private double lat;
+    private String otherId;
+    private String hostMac;
+    private String otherMac;
+    private double lat;
     private double lng;
-	
-	public Session(String hostId, String hostMac, double lat, double lng) {
-		this.hostId = hostId;
-		this.hostMac = hostMac;
-		this.lat = lat;
-		this.lng = lng;
-	}
-	
-	public JsonObject toJson() {
-		JsonObject json = new JsonObject();
-		
-		json.add("hostId", hostId);
-		json.add("hostMac", hostMac);
-		json.add("otherId", otherId);
-		json.add("otherMac", otherMac);
-		json.add("lat", lat);
-		json.add("lng", lng);
-		
-		return json;
-	}
+    private String mapData;
+
+    public Session(String hostId, String hostMac, double lat, double lng, String m) {
+        this.hostId = hostId;
+        this.hostMac = hostMac;
+        this.lat = lat;
+        this.lng = lng;
+        this.mapData = m;
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+
+        json.add("hostId", hostId);
+        json.add("hostMac", hostMac);
+        json.add("otherId", otherId);
+        json.add("otherMac", otherMac);
+        json.add("lat", lat);
+        json.add("lng", lng);
+        json.add("mapData", mapData);
+
+        return json;
+    }
 
     public static Session fromJson(JsonObject json) {
 
@@ -39,12 +42,21 @@ public class Session {
         String otherMac = json.getString("otherMac", null);
         double lat = json.getDouble("lat", 1000);
         double lng = json.getDouble("lng", 1000);
+        String mapData = json.getString("mapData", "");
 
-        Session session = new Session(hostId, hostMac, lat, lng);
+        Session session = new Session(hostId, hostMac, lat, lng, mapData);
         session.setOtherId(otherId);
         session.setOtherMac(otherMac);
 
         return session;
+    }
+
+    public String getMapData() {
+        return mapData;
+    }
+
+    public void setMapData(String mapData) {
+        this.mapData = mapData;
     }
 
     public double getLat() {

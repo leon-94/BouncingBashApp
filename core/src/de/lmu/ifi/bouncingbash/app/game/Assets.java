@@ -2,6 +2,7 @@ package de.lmu.ifi.bouncingbash.app.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -20,7 +21,12 @@ public class Assets {
     public Texture TEX_ARROW;
     public Texture TEX_SWITCH;
     public Texture TEX_DUST;
+    public Texture TEX_BACKGROUND0;
+    public Texture TEX_BACKGROUND1;
     public Texture TEX_TITLE;
+    public Texture TEX_YOUWON;
+    public Texture TEX_YOULOST;
+    public Texture TEX_DOT;
 
     public BitmapFont FONT_CALIBRI_32;
     public BitmapFont FONT_CALIBRI_64;
@@ -34,7 +40,7 @@ public class Assets {
     private HashMap atlases;
     private HashMap fonts;
 
-    public static void load() {
+    public static void init() {
         a = new Assets();
     }
 
@@ -44,11 +50,14 @@ public class Assets {
     }
 
     private Assets() {
+        textures = new HashMap<String, Texture>();
+        atlases = new HashMap<String, TextureAtlas>();
+        fonts = new HashMap<String, BitmapFont>();
+    }
+
+    public void loadAssets() {
 
         // textures
-        textures = new HashMap<String, Texture>();
-        TEX_BALL = new Texture("ball_gear.png");
-        textures.put("TEX_BALL", TEX_BALL);
         TEX_CIRCLE = new Texture("circle.png");
         textures.put("TEX_CIRCLE", TEX_CIRCLE);
         TEX_CIRCLE2 = new Texture("circle2.png");
@@ -61,20 +70,24 @@ public class Assets {
         textures.put("TEX_DUST", TEX_DUST);
         TEX_DIAMONT = new Texture("diamont.png");
         textures.put("TEX_DIAMONT", TEX_DIAMONT);
-        TEX_TITLE = new Texture("title.png");
-        textures.put("TEX_TITLE", TEX_TITLE);
+        TEX_BACKGROUND0 = new Texture("background0.png");
+        textures.put("TEX_BACKGROUND0", TEX_BACKGROUND0);
+        TEX_BACKGROUND1 = new Texture("background1.png");
+        textures.put("TEX_BACKGROUND1", TEX_BACKGROUND1);
 
+        Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        p.setColor(Color.WHITE);
+        p.fill();
+        TEX_DOT = new Texture(p);
+        textures.put("TEX_DOT", TEX_DOT);
+        p.dispose();
 
         // atlases
-        atlases = new HashMap<String, TextureAtlas>();
-
 //        ATLAS_DUST = new TextureAtlas("dust/dust.pack");
 //        atlases.put("ATLAS_DUST", g.ATLAS_DUST);
 
 
         // fonts
-        fonts = new HashMap<String, BitmapFont>();
-
         FONT_CALIBRI_32 = new BitmapFont(Gdx.files.internal("fonts/calibri_32.fnt"));
         FONT_CALIBRI_32.setColor(Color.WHITE);
         FONT_CALIBRI_32.setColor(Color.BLACK);
@@ -97,9 +110,31 @@ public class Assets {
         return (BitmapFont)fonts.get(s);
     }
 
+    public void loadLoadingScreenAssets() {
+        TEX_BACKGROUND1 = new Texture("background1.png");
+        textures.put("TEX_BACKGROUND1", TEX_BACKGROUND1);
+        TEX_TITLE = new Texture("title.png");
+        textures.put("TEX_TITLE", TEX_TITLE);
+        TEX_BALL = new Texture("ball_gear.png");
+        textures.put("TEX_BALL", TEX_BALL);
+    }
+
     public void disposeLoadingScreen() {
+        TEX_BACKGROUND1.dispose();
+        textures.remove("TEX_BACKGROUND1");
         TEX_TITLE.dispose();
         textures.remove("TEX_TITLE");
+    }
+
+    public void loadEndScreenAssets() {
+        TEX_YOUWON = new Texture("youwon.png");
+        textures.put("TEX_YOUWON", TEX_YOUWON);
+        TEX_YOULOST = new Texture("youlost.png");
+        textures.put("TEX_YOULOST", TEX_YOULOST);
+        TEX_BACKGROUND1 = new Texture("background1.png");
+        textures.put("TEX_BACKGROUND1", TEX_BACKGROUND1);
+        TEX_TITLE = new Texture("title.png");
+        textures.put("TEX_TITLE", TEX_TITLE);
     }
 
     public void dispose() {

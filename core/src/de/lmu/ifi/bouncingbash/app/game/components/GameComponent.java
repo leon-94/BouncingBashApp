@@ -18,7 +18,7 @@ public abstract class GameComponent {
     protected Texture texture;
     protected Sprite sprite;
     protected float alphaValue = 1;
-    Color color = Color.WHITE;
+    protected Color color = Color.WHITE;
 
     protected boolean down = false;
 

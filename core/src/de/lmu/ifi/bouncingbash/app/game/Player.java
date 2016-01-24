@@ -10,8 +10,16 @@ import de.lmu.ifi.bouncingbash.app.game.components.Ball;
 public class Player {
 
     private int lives = Constants.LIVES;
+    private Color color;
     private Ball ball;
 
+    public Player(Color c) {
+        color = c;
+    }
+
+    public Color getColor() {
+        return color;
+    }
     public int getLives() {
         return lives;
     }
@@ -30,8 +38,4 @@ public class Player {
         ball = b;
     }
 
-
-    public Player() {
-
-    }
 }

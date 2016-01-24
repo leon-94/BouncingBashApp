@@ -39,6 +39,28 @@ public class LoginActivity extends ActionBarActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // --- debug ---
+        if(GameData.debug_sp && GameData.postgame) {
+            GameData.postgame = false;
+            String title = GameData.won ? "Congratulations!" : "Oh no";
+            String message = GameData.won ? "You destroyed your opponent like a baws. Well done." : "Maybe next time ...";
+            new android.support.v7.app.AlertDialog.Builder(this)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_menu_myplaces)
+                    .show();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_login, menu);
@@ -111,6 +133,8 @@ public class LoginActivity extends ActionBarActivity {
             JsonObject message = (JsonObject) Json.parse(messageString);
 
             if(message.getBoolean("success", false)) {
+
+                if(!message.getString("type", "UNKNOWN").equals("testauth")) return;
 
                 JsonObject credentials = (JsonObject) message.get("credentials");
                 String userId = credentials.getString("userId", null);

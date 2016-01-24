@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -25,6 +26,7 @@ import de.lmu.ifi.bouncingbash.app.IActivity;
 import de.lmu.ifi.bouncingbash.app.IBluetoothService;
 import de.lmu.ifi.bouncingbash.app.game.animation.AnimationHandler;
 import de.lmu.ifi.bouncingbash.app.game.components.Ball;
+import de.lmu.ifi.bouncingbash.app.game.components.Map;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.Button;
 import de.lmu.ifi.bouncingbash.app.game.components.GameComponent;
 import de.lmu.ifi.bouncingbash.app.game.components.ui.JumpBar;
@@ -53,17 +55,20 @@ public class Game extends ApplicationAdapter {
 	private IActivity activity;
 	private long lastReadingTime = 1000;
 	private long lastWritingTime = 1000;
-    ClockSynchronizer clockSync;
+    private ClockSynchronizer clockSync;
 
 	private SpriteBatch batch;
     private BitmapFont font_calibri_32;
     private BitmapFont font_calibri_64;
     private OrthographicCamera camera;
 	private World world;
+    private Map map;
 
     public AnimationHandler animationHandler;
 
     // graphical elements
+    Sprite background0;
+    Sprite background1;
     Sprite loadingScreen;
     Sprite loadingScreen_ball;
     Sprite loadingScreen_ball2;
@@ -90,6 +95,8 @@ public class Game extends ApplicationAdapter {
     private Ball ball2;
     public Ball myBall;
     public Ball otherBall;
+
+//    public ArrayList<Item> myItems;
 
 	// game state
     public enum State {INIT, RUNNING, PAUSED, DONE};
@@ -128,25 +135,32 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void create () {
+        setState(State.INIT);
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera(Constants.WIDTH, Constants.HEIGHT);
         camera.setToOrtho(false, Constants.WIDTH, Constants.HEIGHT);
 
-        world = new World(new Vector2(0, -1 * Constants.GRAVITY), true);
+        // set up loading screen
+        Assets.init();
+        initLoadingScreen();
 
-        Assets.load();
+        // load assets
+        Assets.getAssets().loadAssets();
+
+        background0 = new Sprite(Assets.getAssets().getTexture("TEX_BACKGROUND0"));
+        background0.setPosition(0, 0);
+        background0.setSize(Constants.WIDTH, Constants.HEIGHT);
+
         font_calibri_32 = Assets.getAssets().getFont("FONT_CALIBRI_32");
         font_calibri_64 = Assets.getAssets().getFont("FONT_CALIBRI_64");
 
-        // set up loading screen
-        initLoadingScreen();
+        // init graphics objects
+        batch = new SpriteBatch();
+        animationHandler = new AnimationHandler(this);
 
-        initUI();
-        initGame();
-
-        Gdx.input.setInputProcessor(new InputHandler(camera, gameComponents, myBall));
-
+        // init world
+        world = new World(new Vector2(0, -1 * Constants.GRAVITY), true);
         world.setContactListener(new ContactListener() {
             @Override
             public void beginContact(Contact contact) {
@@ -171,46 +185,64 @@ public class Game extends ApplicationAdapter {
                 if ((a == myBall.getBody() && b == otherBall.getBody()) ||
                         (a == otherBall.getBody() && b == myBall.getBody())) {
 
+
+//                    Vector2 n = contact.getWorldManifold().getNormal();
+//                    Vector2 va = a.getLinearVelocity();
+//                    Vector2 vb = b.getLinearVelocity();
+//                    float f = Math.abs(va.dot(n)) + Math.abs(vb.dot(n));
+//
+//                    Gdx.app.log(TAG, "collision strength: "+ f);
+//                    if(f < 2) return;
                     Vector2 normal = a.getPosition().sub(b.getPosition()).rotate90(1);
                     int rotation = (int) normal.angle();
 
                     // start contact animation
-                    animationHandler.contactAnim(contactpoint.scl(Constants.PIXELS_TO_METERS), rotation);
+                    animationHandler.contactAnim(new Vector2(contactpoint.x * Constants.PIXELS_TO_METERS, contactpoint.y * Constants.PIXELS_TO_METERS), rotation);
                 }
 
                 for (PhysicsObject p : physicsObjects) p.onCollision(contact, contactpoint, a, b);
             }
         });
 
-        animationHandler = new AnimationHandler();
+        // init game
+        initUI();
+        initGame();
 
-		batch = new SpriteBatch();
-
-		setState(State.INIT);
-
-        clockSync = new ClockSynchronizer();
+        // debugging?
         if(GameData.debug_sp) {
             Gdx.app.log(TAG, "DEBUG SINGLEPLAYER MODE");
-            startGame();
-        }
-        else if(GameData.isHost) clockSync.start();
+//            startGame();
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    startGame();
+                }
+            }, 1.5f);
+        } else {
+            // init synchronizer
+            clockSync = new ClockSynchronizer();
 
-        Gdx.app.log(TAG, "GameData.isHost: "+ GameData.isHost);
-
-        // data exchange
-        if(!GameData.debug_sp) {
+            // start listening to bluetooth connection
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
                     receive();
                 }
             }, 0, Constants.CONN_FREQUENCY_READ);
+
+            if(GameData.isHost) {
+                // start clock sync
+                clockSync.start();
+            }
         }
 
     }
 
     private void initLoadingScreen() {
 
+        Assets.getAssets().loadLoadingScreenAssets();
+        background1 = new Sprite(Assets.getAssets().getTexture("TEX_BACKGROUND1"));
+        background1.setSize(Constants.WIDTH, Constants.HEIGHT);
         loadingScreen = new Sprite(Assets.getAssets().getTexture("TEX_TITLE"));
         loadingScreen.setSize(Constants.WIDTH, Constants.HEIGHT);
         loadingScreen_ball = new Sprite(Assets.getAssets().getTexture("TEX_BALL"));
@@ -224,33 +256,58 @@ public class Game extends ApplicationAdapter {
     }
 
     private void disposeLoadingScreen() {
+        background1 = null;
         loadingScreen = null;
         loadingScreen_ball = null;
         loadingScreen_ball2 = null;
         Assets.getAssets().disposeLoadingScreen();
     }
 
+    private void initEndScreen() {
+        Assets.getAssets().loadEndScreenAssets();
+        background1 = new Sprite(Assets.getAssets().getTexture("TEX_BACKGROUND1"));
+        background1.setSize(Constants.WIDTH, Constants.HEIGHT);
+        loadingScreen = new Sprite(Assets.getAssets().getTexture("TEX_TITLE"));
+        loadingScreen.setSize(Constants.WIDTH, Constants.HEIGHT);
+        loadingScreen_ball = new Sprite(Assets.getAssets().getTexture("TEX_BALL"));
+        loadingScreen_ball.setSize(128, 128);
+        loadingScreen_ball.setOriginCenter();
+        loadingScreen_ball.setPosition(500, 300);
+        loadingScreen_ball2 = new Sprite(Assets.getAssets().getTexture("TEX_BALL"));
+        loadingScreen_ball2.setSize(128, 128);
+        loadingScreen_ball2.setOriginCenter();
+        loadingScreen_ball2.setPosition(loadingScreen_ball.getX() + 90, loadingScreen_ball.getY() + 90);
+    }
+
     private void initUI() {
 
         // create players
-        player1 = new Player();
-        player2 = new Player();
+        player1 = new Player(Color.GREEN);
+        player2 = new Player(Color.YELLOW);
+        if(GameData.isHost) {
+            myPlayer = player1;
+            otherPlayer = player2;
+        }
+        else {
+            myPlayer = player2;
+            otherPlayer = player1;
+        }
 
         // UI
-        jumpBar = new JumpBar(5, 5);
+        jumpBar = new JumpBar(5, 5, myPlayer.getColor());
         add(jumpBar);
-        lifeCounter1 = new LifeCounter(5, Constants.HEIGHT - 55, player1);
+        lifeCounter1 = new LifeCounter(5, Constants.HEIGHT - 55, myPlayer);
         add(lifeCounter1);
-        lifeCounter2 = new LifeCounter(Constants.WIDTH - 405, Constants.HEIGHT - 55, player2);
+        lifeCounter2 = new LifeCounter(Constants.WIDTH - 405, Constants.HEIGHT - 55, otherPlayer);
         add(lifeCounter2);
 
-        Button button1 = new Button("Quit", Constants.WIDTH - 200, Constants.HEIGHT - 80, 200, 80){
-            @Override
-            public void onClick(float x, float y){
-                Gdx.app.exit();
-            }
-        };
-        add(button1);
+//        Button button1 = new Button("Quit", Constants.WIDTH - 200, Constants.HEIGHT - 80, 200, 80){
+//            @Override
+//            public void onClick(float x, float y){
+//                Gdx.app.exit();
+//            }
+//        };
+//        add(button1);
     }
 
     private void initGame() {
@@ -263,47 +320,79 @@ public class Game extends ApplicationAdapter {
 
         // indentify own ball
         if(GameData.isHost) {
-            myPlayer = player1;
-            otherPlayer = player2;
-
             myBall = ball1;
             otherBall = ball2;
             add(ball2);
             add(ball1);
         }
         else {
-            myPlayer = player2;
-            otherPlayer = player1;
-
             myBall = ball2;
             otherBall = ball1;
             add(ball1);
             add(ball2);
         }
 
+        // init input processor
+        Gdx.input.setInputProcessor(new InputHandler(camera, gameComponents, myBall));
+
+        // load map
         loadMap();
     }
 
     private void loadMap() {
+        if(GameData.debug_sp) GameData.map = GameData.defaultMap;
 
-        // walls
-        Wall wall1 = new Wall(this, world, 0, 0, (int)Constants.WIDTH, 20);
-        add(wall1);
-        Wall wall2 = new Wall(this, world, 0, 300, (int)Constants.WIDTH/2, 20);
-        add(wall2);
-        Wall wall3 = new Wall(this, world, (int)Constants.HEIGHT/2, 600, (int)Constants.WIDTH/2, 20);
-        add(wall3);
-        Wall wall4 = new Wall(this, world, (int)Constants.WIDTH - 20, 0, 20, (int)Constants.HEIGHT/2);
-        add(wall4);
-        Wall wall5 = new Wall(this, world, 0, 600, 20, (int)Constants.HEIGHT - 600);
-        add(wall5);
-        Wall wall6 = new Wall(this, world, 0, (int)Constants.HEIGHT-20, (int)Constants.WIDTH - 500, 20);
-        add(wall6);
+//        // -----------------------------------------------------------------------------------------
+//        // -----------------------------------------------------------------------------------------
+//        // create map
+//        int w1 = 500;
+//        int dis = 300;
+//        int th = 30;
+//
+//        Wall[] walls = new Wall[6];
+//        walls[0] = new Wall(this, world, (int)Constants.WIDTH/2-w1/2, 0, w1, th);
+//        walls[1] = new Wall(this, world, (int)Constants.WIDTH/2-w1/2, (int)Constants.HEIGHT-th, w1, th);
+//        walls[2] = new Wall(this, world, 0, dis, w1, th);
+//        walls[3] = new Wall(this, world, (int)Constants.WIDTH-w1, dis, w1, th);
+//        walls[4] = new Wall(this, world, 0, (int)Constants.HEIGHT-dis-th, w1, th);
+//        walls[5] = new Wall(this, world, (int)Constants.WIDTH-w1, (int)Constants.HEIGHT-dis-th, w1, th);
+//
+//        // switches
+//        Switch[] switches = new Switch[1];
+//        switches[0] = new Switch(this, world, (int)Constants.WIDTH/2-65, (int)Constants.HEIGHT/2-65);
+//
+//        // spawn points
+//        Vector2[] spawnPoints = new Vector2[3];
+//        spawnPoints[0] = new Vector2((int)Constants.WIDTH/2, Constants.HEIGHT/3-Constants.BALL_RADIUS);
+//        spawnPoints[1] = new Vector2(100, Constants.HEIGHT/2-Constants.BALL_RADIUS);
+//        spawnPoints[2] = new Vector2((int)Constants.WIDTH-100-Constants.BALL_RADIUS, Constants.HEIGHT/2-Constants.BALL_RADIUS);
+//
+//        Map m = new Map(this, world, walls, switches, spawnPoints);
+//        String mapString = m.toJson().toString();
+//        Gdx.app.log(TAG, "------ map ------");
+//        Gdx.app.log(TAG, mapString);
+//        Gdx.app.log(TAG, "------ map ------");
+//        // -----------------------------------------------------------------------------------------
+//        // -----------------------------------------------------------------------------------------
 
-        // switches
-        add(new Switch(this, world, (int)Constants.WIDTH - 150, 20));
-//        add(new Switch(this, world, (int)Constants.WIDTH/2, 120));
-        add(new Switch(this, world, 20, (int)Constants.HEIGHT - 150));
+        map = new Map(this, world, GameData.map);
+        for(int i = 0; i < map.walls.length; i++) {
+            add(map.walls[i]);
+        }
+        for(int i = 0; i < map.switches.length; i++) {
+            add(map.switches[i]);
+        }
+
+//        //items/itemspawnerpunkte
+//        Item i1=new Item(this,world,100,100);
+//        add(i1);
+//        myItems.add(i1);
+//        Item i2=new Item(this,world,100,400);
+//        add(i2);
+//        myItems.add(i2);
+//        Item i3=new Item(this,world,400,100);
+//        myItems.add(i3);
+//        add(i3);
     }
 
     public void startGame() {
@@ -312,6 +401,7 @@ public class Game extends ApplicationAdapter {
 
         GameData.gameStartTime = System.currentTimeMillis();
         Gdx.app.log(TAG, "gameStartTime: " + GameData.gameStartTime);
+        disposeLoadingScreen();
         setState(State.RUNNING);
 
         Timer.schedule(new Timer.Task() {
@@ -340,8 +430,8 @@ public class Game extends ApplicationAdapter {
         }
 
         // spawn balls
-        myBall.respawn(Constants.WIDTH/2 - Constants.BALL_RADIUS, 50);
-        otherBall.respawn(Constants.WIDTH/2 - Constants.BALL_RADIUS, 350);
+        ball1.respawn(map.getSpawnPoints()[0]);
+        ball2.respawn(map.getSpawnPoints()[1]);
     }
 
     public void update(float elapsedTime) {
@@ -364,12 +454,13 @@ public class Game extends ApplicationAdapter {
 
         switch(getState()) {
             case RUNNING:
+                background0.draw(batch);
                 for(PhysicsObject p : physicsObjects) p.render(batch);
                 for(UIComponent u : uiComponents) u.render(batch);
                 animationHandler.render(batch);
                 break;
             case INIT:
-//                font_calibri_64.draw(batch, "Loading ...", (Constants.WIDTH - 400)/2, (Constants.HEIGHT - font_calibri_64.getLineHeight())/2);
+                background1.draw(batch);
                 loadingScreen.draw(batch);
                 loadingScreen_ball.setRotation(loadingScreen_ball.getRotation() + 2);
                 loadingScreen_ball.draw(batch);
@@ -377,9 +468,12 @@ public class Game extends ApplicationAdapter {
                 loadingScreen_ball2.draw(batch);
                 break;
             case DONE:
-                for(PhysicsObject p : physicsObjects) p.render(batch);
-                for(UIComponent u : uiComponents) u.render(batch);
-                animationHandler.render(batch);
+                background1.draw(batch);
+                loadingScreen.draw(batch);
+                loadingScreen_ball.setRotation(loadingScreen_ball.getRotation() + 2);
+                loadingScreen_ball.draw(batch);
+                loadingScreen_ball2.setRotation(loadingScreen_ball2.getRotation() - 2);
+                loadingScreen_ball2.draw(batch);
                 break;
             case PAUSED:
                 break;
@@ -396,25 +490,8 @@ public class Game extends ApplicationAdapter {
         Assets.getAssets().dispose();
     }
 
-//    private int lastEventId = GameData.isHost ? -2 : -1;
-//    private synchronized int getNewEventId() {
-//        lastEventId += 2;
-//        return lastEventId;
-//    }
-//    private synchronized void notifyIdCounter(int id) {
-//        if(lastEventId < id) lastEventId = id;
-//        else if(lastEventId == id) Gdx.app.log(TAG, "big problem");
-//    }
-
-    private int event_toggle_gravity = -1;
-    private int event_toggle_gravity_tc = 0;
     public void onToggleGravity() {
         Gdx.app.log(TAG, "onToggleGravity");
-
-        // assign id to event
-        event_toggle_gravity++;
-        // set transmission counter so event (and its id) will be transmitted
-        event_toggle_gravity_tc = Constants.CONN_REPETITIONS;
 
         doToggleGravity();
     }
@@ -427,25 +504,8 @@ public class Game extends ApplicationAdapter {
         animationHandler.gravityAnim(new Vector2(Constants.WIDTH / 2, Constants.HEIGHT / 2), rotation);
     }
 
-    private int event_death = -1;
-    private int event_death_tc = 0;
-    public void onDeath(Ball ball) {
-
-        // assign id to event
-        event_death++;
-        // set transmission counter so event (and its id) will be transmitted
-        event_death_tc = Constants.CONN_REPETITIONS;
-
-        doDeath(ball, 1);
-    }
-    private void doDeath(Ball ball, float delay) {
-//        final Ball b = ball;
-//        Timer.schedule(new Timer.Task() {
-//            @Override
-//            public void run() {
-//                b.respawn();
-//            }
-//        }, delay);
+    public void doDeath(Ball ball) {
+        Gdx.app.log(TAG, "doDeath");
 
         Player p = ball.getPlayer();
         p.loseLife();
@@ -453,21 +513,46 @@ public class Game extends ApplicationAdapter {
             endGame(p);
         }
         else {
-            ball.respawn(Constants.WIDTH / 2 - Constants.BALL_RADIUS, 150);
-            animationHandler.spawnAnim(new Vector2(Constants.WIDTH/2 - Constants.BALL_RADIUS, 150));
+            Vector2 sp = getRandomFromArray(map.getSpawnPoints());
+            ball.respawn(sp);
+            animationHandler.spawnAnim(sp, ball.getPlayer().getColor());
         }
     }
-//    public void onFinishSpawning(float x, float y) {
-//        animationHandler.spawnAnim(new Vector2(x, y));
-//    }
 
-    private void endGame(Player loser) {
-        state = State.DONE;
+    private Vector2 getRandomFromArray(Vector2[] ps) {
+        double r = Math.random();
+        return ps[(int)(r*ps.length)];
     }
 
-    public void onJump(float x, float y) {
+    private void endGame(final Player loser) {
+
+        initEndScreen();
+
+        boolean won = loser.equals(otherPlayer);
+        GameData.postgame = true;
+        GameData.won = won;
+        if(won) animationHandler.wonAnim(Color.CYAN);
+        else animationHandler.lostAnim(Color.RED);
+//        if(won) animationHandler.wonAnim(myPlayer.getColor());
+//        else animationHandler.lostAnim(otherPlayer.getColor());
+    }
+
+//    public void showEndScreen() {
+//        setState(Game.State.DONE);
+//
+//        Timer.schedule(new Timer.Task() {
+//            @Override
+//            public void run() {
+//                Gdx.app.exit();
+//            }
+//        }, 2);
+//    }
+
+    public void onJump(Ball b) {
         jumpBar.onJump();
-        animationHandler.jumpAnim(new Vector2(x, y + Math.signum(world.getGravity().y) * Constants.BALL_RADIUS));
+        animationHandler.jumpAnim(new Vector2(b.getPosition().x,
+                b.getPosition().y + Math.signum(world.getGravity().y) * Constants.BALL_RADIUS),
+                b.getPlayer().getColor());
     }
 
     private void add(GameComponent c) {
@@ -489,30 +574,37 @@ public class Game extends ApplicationAdapter {
 	private void transmit() {
 
         Gdx.app.log(TAG, "Game#transmit");
-		lastWritingTime = System.currentTimeMillis();
+        lastWritingTime = System.currentTimeMillis();
 
-		JsonObject message = new JsonObject();
-		// add data to message
-		// ...
+        JsonObject message = new JsonObject();
+
+        // add data to message
         message.add("type", "gamedata");
-		message.add("timestamp", getGameTime());
+        message.add("timestamp", getGameTime());
         message.add("ball", myBall.toJson());
+        message.add("gravity", getGravityDirection());
 
-        JsonObject events = new JsonObject();
-//        if(event_toggle_gravity_tc > 0) {
-            events.add("event_toggle_gravity", event_toggle_gravity);
-            event_toggle_gravity_tc--;
-//        }
-//        if(event_death_tc > 0) {
-            events.add("event_death", event_death);
-            event_death_tc--;
-//        }
+//        // events
+//        JsonObject events = new JsonObject();
+//        events.add("event_toggle_gravity", event_toggle_gravity);
+//        event_toggle_gravity_tc--;
+//        events.add("event_death", event_death);
+//        event_death_tc--;
+//
+//        message.add("events", events);
+//
+////        //items
+////            for(Item i : myItems)
+////            {
+////                if(i.taken) {
+////                    message.add("item", i.toJson());
+////                }
+////            }
 
-        message.add("events", events);
         btService.transmit(message);
 
-		Gdx.app.log(TAG, "transmitted: " + message.toString());
-	}
+        Gdx.app.log(TAG, "transmitted: " + message.toString());
+    }
 
 	private void receive() {
         Gdx.app.log(TAG, "Game#receive");
@@ -560,26 +652,40 @@ public class Game extends ApplicationAdapter {
     private void receiveGameData() {
         JsonObject message = btService.receiveLatest();
         if(message == null) return;
+        Gdx.app.log(TAG, "received: " + message.toString());
+
         float timestamp = message.getFloat("timestamp", getGameTime());
 
+        // let ball handle its position
         otherBall.processGameData(message);
-        JsonObject events = (JsonObject) message.get("events");
 
-        // handle events
-
-        // toggle gravity
-        int m_event_toggle_gravity = events.getInt("event_toggle_gravity", event_toggle_gravity);
-        if (m_event_toggle_gravity > event_toggle_gravity) {
-            event_toggle_gravity++;
-            doToggleGravity();
+        // correct gravity direction if necassary
+        final float direction = message.getFloat("gravity", getGravityDirection());
+        if(direction != getGravityDirection()) {
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    if(direction != getGravityDirection()) doToggleGravity();
+                }
+            }, GameData.meanLatency*2);
         }
 
-        // death
-        int m_event_death = events.getInt("event_death", event_death);
-        if (m_event_toggle_gravity > event_toggle_gravity) {
-            event_death++;
-            doDeath(otherBall, 1 - (getGameTime() - timestamp));
-        }
+        //        JsonObject events = (JsonObject) message.get("events");
+
+//        // handle events
+//
+//        // toggle gravity
+//        int m_event_toggle_gravity = events.getInt("event_toggle_gravity", event_toggle_gravity);
+//        if (m_event_toggle_gravity > event_toggle_gravity) {
+//            event_toggle_gravity++;
+//            doToggleGravity();
+//        }
+//        // death
+//        int m_event_death = events.getInt("event_death", event_death);
+//        if (m_event_death > event_death) {
+//            event_death++;
+//            doDeath(otherBall, 1 - (getGameTime() - timestamp));
+//        }
     }
 
 
@@ -589,14 +695,11 @@ public class Game extends ApplicationAdapter {
 	private class ClockSynchronizer {
 
         private void start() {
-            Gdx.app.log(TAG, "ClockSynchronizer#start");
             new Thread() {
                 @Override
                 public void run() {
                     try {
-                        Gdx.app.log(TAG, "start sleeping");
                         Thread.sleep(5000);
-                        Gdx.app.log(TAG, "stop sleeping");
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -606,19 +709,18 @@ public class Game extends ApplicationAdapter {
         }
 
         private void startClockSync() {
-            Gdx.app.log(TAG, "ClockSynchronizer#startClockSync");
             new Thread() {
                 @Override
                 public void run() {
                     int i = 0;
-                    while (i < 30) {
+                    while (i < 50) {
                         i++;
                         JsonObject message = new JsonObject();
                         message.add("type", "clocksync");
                         message.add("timestamp", System.currentTimeMillis());
                         btService.write(message.toString());
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(50);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -628,7 +730,6 @@ public class Game extends ApplicationAdapter {
         }
 
         private void onReceiveClockSync(JsonObject message) {
-            Gdx.app.log(TAG, "ClockSynchronizer#onReceiveClockSync");
 
             try {
                 long timestamp = message.getLong("timestamp", 0);
@@ -642,14 +743,11 @@ public class Game extends ApplicationAdapter {
         }
 
         private void clockSyncCallback(JsonObject message) {
-            Gdx.app.log(TAG, "ClockSynchronizer#clockSyncCallback");
             if (latencyCounter > 20) return;
 
             try {
                 long timestamp = message.getLong("timestamp", 0);
                 long rtd = System.currentTimeMillis() - timestamp;
-                Gdx.app.log(TAG, "rtd: " + rtd);
-                Gdx.app.log(TAG, "latency: " + rtd / 2);
                 latencies += rtd;
                 latencyCounter++;
             } catch (Exception e) {
@@ -657,10 +755,8 @@ public class Game extends ApplicationAdapter {
             }
 
             if (latencyCounter == 20) {
-                Gdx.app.log(TAG, "latencyCounter reached 20");
 
                 final long meanLatency = latencies / 40;
-                Gdx.app.log(TAG, "mean latency: " + meanLatency);
                 GameData.meanLatency = meanLatency;
 
                 JsonObject msg2 = new JsonObject();

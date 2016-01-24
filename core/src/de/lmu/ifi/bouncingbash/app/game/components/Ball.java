@@ -40,20 +40,25 @@ public class Ball extends PhysicsObject {
     public Player getPlayer() { return player; }
 
     // transmission
-    float lastJump = 0;
-    private boolean transmitJump = false;
+    private float m_timestamp = 0;
+    private int m_state = 0;
+    private float m_posx = 0;
+    private float m_posy = 0;
+    private float m_angle = 0;
+    private float m_speedx = 0;
+    private float m_speedy = 0;
+    private float m_angularspeed = 0;
+    private float m_accelerometer = 0;
 
-    private int m_state;
-    private float m_timestamp;
-    private float m_posx;
-    private float m_posy;
-    private float m_angle;
-    private float m_speedx;
-    private float m_speedy;
-    private float m_angularspeed;
-    private float m_accelerometer;
-    private float m_jump;
-    private float m_lastJump;
+    private float lastJump = 0;
+    private int transmitJump = 0;
+    private float m_lastJump = 0;
+    private float m_jump = 0;
+
+    private float lastDeath = 0;
+    private int transmitDeath = 0;
+    private float m_lastDeath = 0;
+    private float m_death = 0;
 
 
     public Ball(Game g, World w, Player p, boolean controllable) {
@@ -82,7 +87,8 @@ public class Ball extends PhysicsObject {
 //        texture = new Texture(p);
 //        p.dispose();
 
-        color = controllable ? Color.GREEN : Color.YELLOW;
+//        color = controllable ? Color.GREEN : Color.YELLOW;
+        color = player.getColor();
         texture = Assets.getAssets().getTexture("TEX_BALL");
 
         sprite = new Sprite(texture);
@@ -120,18 +126,6 @@ public class Ball extends PhysicsObject {
         */
         body.createFixture(fixtureDef);
         shape.dispose();
-
-        // setup trnasmitted position fileds
-        m_timestamp = 0;
-        m_posx = 0;
-        m_posy = 0;
-        m_angle = 0;
-        m_speedx = 0;
-        m_speedy = 0;
-        m_angularspeed = 0;
-        m_accelerometer = 0;
-        m_jump = 0;
-        m_lastJump = 0;
     }
 
     @Override
@@ -140,17 +134,24 @@ public class Ball extends PhysicsObject {
         switch(state) {
 
             case STATE_ALIVE:
+
+                // check for out of bounds
+                boolean dead =  (game.getGravityDirection() == -1 && body.getPosition().y < -200 / Constants.PIXELS_TO_METERS ||
+                        game.getGravityDirection() == 1 && body.getPosition().y > (200 + Constants.HEIGHT) / Constants.PIXELS_TO_METERS ||
+                        body.getPosition().x < -200 / Constants.PIXELS_TO_METERS ||
+                        body.getPosition().x > (200 + Constants.WIDTH) / Constants.PIXELS_TO_METERS);
+
+                if(dead) {
+                    state = STATE_DEAD;
+                    Gdx.app.log(TAG, "DEAD");
+                }
+
                 if (controllable) {
                     float adjustedY = Gdx.input.getAccelerometerY();
                     body.applyForceToCenter(inputToForce(adjustedY) * elapsedTime, 0, true);
 
-                    if (game.getGravityDirection() == -1 && body.getPosition().y < -200 / Constants.PIXELS_TO_METERS ||
-                            game.getGravityDirection() == 1 && body.getPosition().y > (200 + Constants.HEIGHT) / Constants.PIXELS_TO_METERS ||
-                            body.getPosition().x < -200 / Constants.PIXELS_TO_METERS ||
-                            body.getPosition().x > (200 + Constants.WIDTH) / Constants.PIXELS_TO_METERS) {
+                    if(dead) onDeath();
 
-                        game.onDeath(this);
-                    }
                 } else {
                     if (Game.reconMethod == Game.RECON_METHOD_PER_UPDATE)
                         reconcilePerUpdate(elapsedTime);
@@ -205,26 +206,39 @@ public class Ball extends PhysicsObject {
         //return 1*y/body.getLinearVelocity().x/Constants.PIXELS_TO_METERS;
     }
 
-    public void jump() {
+    private void onDeath() {
+        Gdx.app.log(TAG, "onDeath");
+//        if(state != STATE_ALIVE) return;
+
+        transmitDeath = Constants.CONN_REPETITIONS;
+        doDeath();
+    }
+    private void doDeath() {
+        Gdx.app.log(TAG, "doDeath");
+        lastDeath = Game.getGameTime();
+        game.doDeath(this);
+    }
+
+    public void onJump() {
         if(state != STATE_ALIVE) return;
 
         if(Game.getGameTime() - lastJump > Constants.JUMP_FREQ && game.getState() == Game.State.RUNNING) {
-            lastJump = Game.getGameTime();
-            body.setLinearVelocity(body.getLinearVelocity().x, 0);
-            body.applyForceToCenter(0, -1 * Math.signum(world.getGravity().y) * Constants.JUMP_STRENGTH / Constants.PIXELS_TO_METERS, true);
-
-            Vector2 pos = body.getPosition();
-            game.onJump(pos.x*Constants.PIXELS_TO_METERS, pos.y*Constants.PIXELS_TO_METERS);
+            transmitJump = Constants.CONN_REPETITIONS;
+            doJump();
         }
-
-        transmitJump = true;
     }
 
-//    public void respawn() {
-//        respawn(Constants.RESPAWN.x / Constants.PIXELS_TO_METERS, Constants.RESPAWN.y / Constants.PIXELS_TO_METERS);
-//    }
+    private void doJump() {
+        lastJump = Game.getGameTime();
 
-    public void respawn(float x, float y) {
+        body.setLinearVelocity(body.getLinearVelocity().x, 0);
+        body.applyForceToCenter(0, -1 * Math.signum(world.getGravity().y) * Constants.JUMP_STRENGTH / Constants.PIXELS_TO_METERS, true);
+
+        Vector2 pos = body.getPosition();
+        game.onJump(this);
+    }
+
+    public void respawn(Vector2 p) {
         if(state == STATE_SPAWNING) return;
         state = STATE_SPAWNING;
 
@@ -232,10 +246,15 @@ public class Ball extends PhysicsObject {
         alphaValue = 0;
 
         body.setGravityScale(0);
-        body.setTransform(x / Constants.PIXELS_TO_METERS, y / Constants.PIXELS_TO_METERS, 0);
+        body.setTransform(p.x / Constants.PIXELS_TO_METERS, p.y / Constants.PIXELS_TO_METERS, 0);
         body.setLinearVelocity(0, 0);
         body.setAngularVelocity(0);
     }
+
+
+    // ----------------------------------------------------------------
+    // -------------------- reconciliation methods --------------------
+    // ----------------------------------------------------------------
 
     public JsonObject toJson() {
         JsonObject jsonBall = new JsonObject();
@@ -251,9 +270,16 @@ public class Ball extends PhysicsObject {
         jsonBall.add("anglularspeed", body.getAngularVelocity());
         jsonBall.add("accelerometer", Gdx.input.getAccelerometerY());
         jsonBall.add("state", state);
-        if(transmitJump) {
-            jsonBall.add("jump", Game.getGameTime());
-            transmitJump = false;
+
+        // handle events
+        if(transmitJump > 0) {
+            jsonBall.add("jump", lastJump);
+            transmitJump--;
+        }
+        if(transmitDeath > 0) {
+            Gdx.app.log(TAG, "transmitted death");
+            jsonBall.add("death", lastDeath);
+            transmitDeath--;
         }
 
         return jsonBall;
@@ -273,6 +299,7 @@ public class Ball extends PhysicsObject {
         m_angularspeed = jsonBall.getFloat("anglularspeed", 0);
         m_accelerometer = jsonBall.getFloat("accelerometer", 0);
         m_jump = jsonBall.getFloat("jump", m_lastJump);
+        m_death = jsonBall.getFloat("death", m_lastDeath);
         m_state = jsonBall.getInt("state", state);
 
         if(Game.reconMethod == Game.RECON_METHOD_PER_MESSAGE || Game.reconMethod == Game.RECON_METHOD_INPUT) reconcilePerMessage();
@@ -301,13 +328,26 @@ public class Ball extends PhysicsObject {
             body.setLinearVelocity(m_speedx, m_speedy);
             body.setAngularVelocity(m_angularspeed);
         }
+        else {
+            body.setTransform(new_posx, new_posy, new_angle);
+            body.setLinearVelocity(m_speedx, m_speedy);
+            body.setAngularVelocity(m_angularspeed);
+        }
 
-        body.setTransform(new_posx, new_posy, new_angle);
-        body.setLinearVelocity(m_speedx, m_speedy);
-        body.setAngularVelocity(m_angularspeed);
+        // events
+        if(m_jump != m_lastJump) {
+            Gdx.app.log(TAG, "received jump");
+            doJump();
+            m_lastJump = m_jump;
+        }
+        if(m_death != m_lastDeath) {
+            Gdx.app.log(TAG, "received death");
+            doDeath();
+            m_lastDeath = m_death;
+        }
 
         // other stuff
-        state = m_state;
+//        state = m_state;
     }
 
     private synchronized void reconcilePerUpdate(float elapsedTimeSinceUpdate) {
@@ -346,11 +386,6 @@ public class Ball extends PhysicsObject {
 
         float adjustedY = m_accelerometer;
         body.applyForceToCenter(inputToForce(adjustedY) * elapsedTime, 0, true);
-
-        if(m_jump != m_lastJump) {
-            jump();
-            m_lastJump = m_jump;
-        }
     }
 
 

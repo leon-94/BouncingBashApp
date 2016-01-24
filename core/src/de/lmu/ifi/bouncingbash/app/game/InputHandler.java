@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 import java.util.ArrayList;
 
 import de.lmu.ifi.bouncingbash.app.game.components.Ball;
+import de.lmu.ifi.bouncingbash.app.game.components.GameComponent;
 
 /**
  * Created by Leon on 12.01.2016.
@@ -41,8 +42,8 @@ public class InputHandler implements InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 translatedPos = camera.unproject(new Vector3(screenX, screenY, 0));
-        for(de.lmu.ifi.bouncingbash.app.game.components.GameComponent g : gameComponents) g.touchDown((int)translatedPos.x, (int)translatedPos.y, pointer, button);
-        ball.jump();
+        for(GameComponent g : gameComponents) g.touchDown((int)translatedPos.x, (int)translatedPos.y, pointer, button);
+        ball.onJump();
         return false;
     }
 

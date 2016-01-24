@@ -41,7 +41,10 @@ public class AtlasAnimation extends BasicAnimation {
     @Override
     public void update(float elapsedTime) {
         stateTime += elapsedTime;
-        if(!repeating && animation.isAnimationFinished(stateTime)) done = true;
+        if(!repeating && animation.isAnimationFinished(stateTime)) {
+            done = true;
+            onDone();
+        }
     }
 
     @Override

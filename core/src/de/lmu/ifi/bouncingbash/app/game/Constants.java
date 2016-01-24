@@ -10,7 +10,7 @@ public class Constants {
     public static final float SIM_FREQUENCY = 1/60f;
     public static final float CONN_FREQUENCY_READ = 1/30f;
     public static final float CONN_FREQUENCY_WRITE = 1/20f;
-    public static final int CONN_REPETITIONS = 3;
+    public static final int CONN_REPETITIONS = 10;
     public static final float CONN_MAX_DELTA_TIME_TOLERANCE = 0.1f;
     public static final float RECON_FACTOR = 2f;
     public static final float ALLOWED_DEVIATION = 2f;   // in meters
@@ -25,6 +25,6 @@ public class Constants {
     public static final float JUMP_STRENGTH = 100000f;
     public static final float JUMP_FREQ = 1f;
     public static final Vector2 RESPAWN = new Vector2(WIDTH/2 - BALL_RADIUS, 100);
-    public static final float GRAVITY_TOGGLE_COOLDOWN = 1f;
+    public static final float GRAVITY_TOGGLE_COOLDOWN = 2f;
     public static final int MAX_LIVES = 5;
 }

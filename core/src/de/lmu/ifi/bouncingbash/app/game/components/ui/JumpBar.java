@@ -23,7 +23,7 @@ public class JumpBar extends UIComponent {
 
     private float lastJump = 0;
 
-    public JumpBar(float x, float y) {
+    public JumpBar(float x, float y, Color c) {
 
         Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
         p.setColor(Color.WHITE);
@@ -50,6 +50,7 @@ public class JumpBar extends UIComponent {
         filling.setX(x + borderThickness);
         filling.setY(y + borderThickness);
         filling.setSize(width-2*borderThickness, height-2*borderThickness);
+        filling.setColor(c);
     }
 
     @Override

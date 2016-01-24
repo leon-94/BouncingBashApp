@@ -20,10 +20,10 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import de.lmu.ifi.bouncingbash.app.game.Assets;
 import de.lmu.ifi.bouncingbash.app.game.Constants;
 import de.lmu.ifi.bouncingbash.app.game.Game;
 import de.lmu.ifi.bouncingbash.app.game.GameData;
-import de.lmu.ifi.bouncingbash.app.game.Textures;
 import de.lmu.ifi.bouncingbash.app.game.UpgradeType;
 
 /**
@@ -106,7 +106,7 @@ public class Item extends PhysicsObject {
     /**creates item sprite and body**/
     public void createItem()
     {
-        sprite=new Sprite(Textures.getTextures().getTexture(upgradeType.getName()));
+        sprite=new Sprite(Assets.getAssets().getTexture(upgradeType.getName()));
         sprite.setPosition(x, y);
 
         // Now create a BodyDefinition.  This defines the physics objects type and position in the simulation
@@ -180,7 +180,7 @@ public class Item extends PhysicsObject {
 
                 if(posxItem ==x&&posyItem ==y &&upgradeType==null)
                 {
-                    sprite=new Sprite(Textures.getTextures().getTexture(upgradeType.getName()));
+                    sprite=new Sprite(Assets.getAssets().getTexture(upgradeType.getName()));
                     taken=taken2;
                 }
 

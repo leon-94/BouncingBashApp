@@ -74,6 +74,30 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         sessionMarkers = new HashMap<>();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(GameData.postgame) {
+            GameData.postgame = false;
+            String title = GameData.won ? "Congratulations!" : "Well";
+            String message = GameData.won ? "Nice job." : "Maybe next time ...";
+            new android.support.v7.app.AlertDialog.Builder(this)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    })
+                    .setIcon(android.R.drawable.btn_star)
+                    .show();
+
+            // send stats to server
+            // TODO
+        }
+    }
+
 
     /**
      * Manipulates the map once available.
@@ -224,7 +248,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             Session s = new Session(j.getString("hostId", null),
                     j.getString("hostMac", null),
                     j.getDouble("lat", 1000),
-                    j.getDouble("lng", 1000));
+                    j.getDouble("lng", 1000),
+                    j.getString("mapData", ""));
             sessions.add(s);
         }
         return sessions;
@@ -290,11 +315,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     }
                     else {
                         Session session = Session.fromJson((JsonObject) message.get("session"));
+                        GameData.map = session.getMapData();
                         startConnection(session);
                     }
                     break;
                 case "joinsession":
                     Session session2 = Session.fromJson((JsonObject)message.get("session"));
+                    GameData.map = session2.getMapData();
                     startConnection(session2);
                     break;
                 default: break;

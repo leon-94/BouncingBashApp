@@ -31,6 +31,7 @@ public class LifeCounter extends UIComponent {
         this.player = pl;
         this.x = x;
         this.y = y;
+        this.color = pl.getColor();
 
         w = (width - (Constants.MAX_LIVES+1) * padding) / Constants.MAX_LIVES;
         h = height - 2* padding;
@@ -58,8 +59,8 @@ public class LifeCounter extends UIComponent {
 
         backgroundSprite.draw(batch);
         for(int i = 0; i < Constants.LIVES; i++) {
-            sprite.setPosition(x + (i+1)*padding + i*w, y + padding);
-            sprite.setColor(i < player.getLives() ? Color.CYAN : Color.GRAY);
+            sprite.setPosition(x + (i + 1) * padding + i * w, y + padding);
+            sprite.setColor(i < player.getLives() ? player.getColor() : Color.GRAY);
             sprite.draw(batch);
         }
     }

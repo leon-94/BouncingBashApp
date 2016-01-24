@@ -35,6 +35,9 @@ public class AndroidLauncher extends AndroidApplication implements IActivity{
         GameData.isHost = false;
 
         Intent i = new Intent(this, MapActivity.class);
+        Bundle b = new Bundle();
+        b.putString("state", "postgame");
+        b.putBoolean("won", won);
         startActivity(i);
     }
 }
