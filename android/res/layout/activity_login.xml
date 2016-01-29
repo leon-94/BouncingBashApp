@@ -7,34 +7,42 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="1">
 
     <EditText android:id="@+id/edit_login_userid"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:text="name" />
+        android:layout_height="wrap_content"
+        android:password="false"
+        android:hint="NAME"
+        android:textSize="30dp"
+        android:paddingTop="40dp" />
 
-    <EditText android:id="@+id/edit_login_password"
+    <EditText
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:text="password" />
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/edit_login_password"
+        android:hint="PASSWORD"
+        android:textSize="30dp" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:text="Log in"
-        android:onClick="onButtonLogin"/>
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/login"
+        android:onClick="onButtonLogin"
+        android:src="@drawable/login"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="60dp" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:text="Or sign up!"
-        android:onClick="onButtonSignup"/>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:text="Start game in debug mode"
-        android:onClick="startGame"/>
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/signup"
+        android:onClick="onButtonSignup"
+        android:src="@drawable/signup"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="60dp" />
 
 </LinearLayout>
